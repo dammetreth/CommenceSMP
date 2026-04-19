@@ -1,0 +1,135 @@
+
+function castEarthSpell(p: player):
+#			send "{@spelluse} SPELL INITIATION" to {_p}
+	play sound "minecraft:block.stone.break" at volume 1.2 at pitch 0.6 at {_p}'s location
+	play sound "minecraft:entity.iron_golem.step" at volume 1 at pitch 0.7 at {_p}'s location
+	play sound "minecraft:entity.warden.emerge" at volume 0.7 at pitch 0.5 at {_p}'s location
+	loop {Mythical::%{_p}%::MagicPower} + 4 ? 4 times:
+		set {_b} to a random element out of blocks in radius 3 of {_p}
+		set {_b} to block random integer between 1 and 3 blocks below {_b} if {_b} is air
+		loop random integer between 1 and 4 times:
+			draw 18 of block particle using dirt loop-value-2 * 0.25 blocks above {_b}
+			draw 12 of block particle using moss_block loop-value-2 * 0.25 blocks above {_b}
+			draw 14 of block particle using stone loop-value-2 * 0.25 blocks above {_b}
+			draw 10 of dust_color_transition using dustTransition(dark green, brown, 3) loop-value-2 * 0.25 blocks above {_b}
+			wait 1 tick
+	play sound "minecraft:entity.zombie.attack_iron_door" at volume 1.5 at pitch 0.6 at {_p}'s location
+	play sound "minecraft:entity.iron_golem.repair" at volume 1.2 at pitch 0.7 at {_p}'s location
+	play sound "minecraft:block.anvil.land" at volume 0.9 at pitch 0.6 at {_p}'s location
+	draw 60 of block particle using stone at {_p}
+	draw 40 of block particle using rooted_dirt at {_p}
+	draw 30 of block particle using moss_block 1 blocks above {_p}
+	draw 24 of dust_color_transition using dustTransition(brown, dark green, 4) 1.5 blocks above {_p}
+	wait 3 ticks
+
+#			send "{@spelluse} SPELL POWER" to {_p}
+	uncolored {Mythical::%{_p}%::Magic::Spell} contains "Stonefist":
+		apply strength to {_p} for 5 seconds
+		play sound "minecraft:entity.iron_golem.attack" at volume 1.1 at pitch 0.8 at {_p}'s location
+		loop 6 times:
+			draw 48 of block particle using stone loop-value * 0.33 meters in front of {_p}'s head
+			draw 22 of dust_color_transition using dustTransition(brown, green, 3) (distance between {_p} and {_p}'s target) - loop-value meters in front of {_p}'s head
+			draw 12 of block particle using moss_block loop-value * 0.33 meters in front of {_p}'s head
+			{_p}'s target is a mob or a player:
+				make {_p} damage {_p}'s target by 0.6 + {Mythical::%{_p}%::MagicPower} ? 0
+			wait 5 ticks
+			
+	else if uncolored {Mythical::%{_p}%::Magic::Spell} contains "Earthen Bulwark":
+		clear {Mythical::%{_p}%::Blocks::*}
+		add block 1 blocks above block in front of {_p} to {Mythical::%{_p}%::Blocks::*} if block 1 blocks above block in front of {_p} is air
+		add block 2 blocks above block in front of {_p} to {Mythical::%{_p}%::Blocks::*} if block 2 blocks above block in front of {_p} is air
+		loop all entities in radius 3 of {_p}:
+			stop if loop-entity contains painting or item frame or ladder
+		{Mythical::%{_p}%::MagicPower} is more than 1:
+			add block 1 blocks above block to the right of block in front of {_p} to {Mythical::%{_p}%::Blocks::*} if block 1 blocks above block to the right of block in front of {_p} is air
+			add block 2 blocks above block to the right of block in front of {_p} to {Mythical::%{_p}%::Blocks::*} if block 2 blocks above block to the right of block in front of {_p} is air
+		{Mythical::%{_p}%::MagicPower} is more than 2:
+			add block 1 blocks above block to the left of block in front of {_p} to {Mythical::%{_p}%::Blocks::*} if block 1 blocks above block to the left of block in front of {_p} is air
+			add block 2 blocks above block to the left of block in front of {_p} to {Mythical::%{_p}%::Blocks::*} if block 2 blocks above block to the left of block in front of {_p} is air
+
+		loop {Mythical::%{_p}%::Blocks::*}:
+			play sound "minecraft:block.rooted_dirt.place" at volume 1.1 at pitch 0.7 at {_p}'s location
+			play sound "minecraft:entity.iron_golem.repair" at volume 1.2 at pitch 0.6 at {_p}'s location
+			draw 5 of block particle using stone at loop-value
+			set block at loop-value to dirt or grass block
+			draw 3 of block particle using dirt at loop-value
+			wait 3 tick
+		wait 4 seconds
+		loop {Mythical::%{_p}%::Blocks::*}:
+			play sound "minecraft:block.rooted_dirt.place" at volume 1.1 at pitch 0.7 at {_p}'s location
+			play sound "minecraft:entity.iron_golem.repair" at volume 1.2 at pitch 0.6 at {_p}'s location
+			draw 5 of block particle using stone at loop-value
+			set block at loop-value to air
+			draw 3 of block particle using dirt at loop-value
+			wait 3 tick
+			
+	else if uncolored {Mythical::%{_p}%::Magic::Spell} contains "Healing Bloom":
+		clear {Mythical::%{_p}%::Blocks::*}
+		add block at {_p} to {Mythical::%{_p}%::Blocks::*} if block at {_p} is air
+		loop {Mythical::%{_p}%::Blocks::*}:
+			draw 5 of block particle using stone at loop-value
+			set block at loop-value to brown mushroom or red mushroom or dandelion or poppy or blue orchid or allium or azure bluet or red tulip or orange tulip or white tulip or pink tulip or oxeye daisy or cornflower or lily of the valley or sweet berries
+			draw 3 of block particle using dirt at loop-value
+			wait 3 tick
+		loop round(20 + {Mythical::%{_p}%::MagicPower} * 5) times:
+			wait 1 tick
+			chance of 25%
+			add 0.1 + {Mythical::%{_p}%::MagicPower} to health of all players in radius 1 of block at first element of {Mythical::%{_p}%::Blocks::*}
+#					send "&4+♥%0.1 + {Mythical::%{_p}%::MagicPower}%" to all players in radius 1 of block at first element of {Mythical::%{_p}%::Blocks::*}
+			draw 1 of totem_of_undying at block at first element of {Mythical::%{_p}%::Blocks::*}
+		loop {Mythical::%{_p}%::Blocks::*}:
+			draw 5 of block particle using stone at loop-value
+			set block at loop-value to air
+			draw 3 of block particle using dirt at loop-value
+			wait 3 tick
+
+	else if uncolored {Mythical::%{_p}%::Magic::Spell} contains "Tremor Pulse":
+		play sound "minecraft:entity.iron_golem.attack" at volume 1.1 at pitch 0.8 at {_p}'s location
+		draw 48 of block particle using stone at {_p}'s target
+		#draw 22 of dust_color_transition using dustTransition(brown, green, 3) at (distance between {_p} and {_p}'s target) - loop-value meters in front of {_p}'s head
+		loop 8 times:
+			chance of 25%:
+				draw 12 of block particle using moss_block at {_p}'s target
+				push {_p}'s target left with force 1 + ({Mythical::%{_p}%::MagicPower} ? 0.1) if {_p}'s target is a mob
+				make {_p} damage {_p}'s target by 0.1 + {Mythical::%{_p}%::MagicPower} ? 0 if {_p}'s target is a mob
+			wait 1 tick
+			chance of 25%:
+				draw 12 of block particle using moss_block at {_p}'s target
+				push {_p}'s target right with force 1 + ({Mythical::%{_p}%::MagicPower} ? 0.1) if {_p}'s target is a mob
+				make {_p} damage {_p}'s target by 0.1 + {Mythical::%{_p}%::MagicPower} ? 0 if {_p}'s target is a mob
+			wait 1 tick
+			chance of 25%:
+				draw 12 of block particle using moss_block at {_p}'s target
+				push {_p}'s target forwards with force 1 + ({Mythical::%{_p}%::MagicPower} ? 0.1) if {_p}'s target is a mob
+				make {_p} damage {_p}'s target by 0.1 + {Mythical::%{_p}%::MagicPower} ? 0 if {_p}'s target is a mob
+			wait 1 tick
+			chance of 25%:
+				draw 12 of block particle using moss_block at {_p}'s target
+				push {_p}'s target backwards with force 1 + ({Mythical::%{_p}%::MagicPower} ? 0.1) if {_p}'s target is a mob
+				make {_p} damage {_p}'s target by 0.1 + {Mythical::%{_p}%::MagicPower} ? 0 if {_p}'s target is a mob
+			wait 1 tick
+
+	else if uncolored {Mythical::%{_p}%::Magic::Spell} contains "Stoneform":
+		apply resistance to {_p} for 5 seconds
+		play sound "minecraft:entity.iron_golem.attack" at volume 1.1 at pitch 0.8 at {_p}'s location
+		play sound "minecraft:block.rooted_dirt.place" at volume 1.1 at pitch 0.7 at {_p}'s location
+		play sound "minecraft:entity.iron_golem.repair" at volume 1.2 at pitch 0.6 at {_p}'s location
+		loop 50 times:
+			draw 48 of block particle using stone above {_p}'s head
+			draw 12 of block particle using moss_block above {_p}'s head
+			wait 2 ticks
+
+	else if uncolored {Mythical::%{_p}%::Magic::Spell} contains "Spirebind":
+		loop 20 times:
+			chance of 25%:
+				play sound "minecraft:entity.iron_golem.attack" at volume 1.1 at pitch 0.8 at {_p}'s location
+			draw 15 - loop-value of block particle using stone at {_p}'s target
+			draw 15 - loop-value of dust_color_transition using dustTransition(brown, green, 3) at {_p}'s target
+			draw 15 - loop-value of block particle using moss_block at {_p}'s target
+			make {_p} damage {_p}'s target by 0.6 + {Mythical::%{_p}%::MagicPower} ? 0 if {_p}'s target is a mob or a player
+			wait 2 ticks
+
+	else:
+		send "{@spellfail}" to {_p}
+		clear {Mythical::%{_p}%::Magic::Wait}
+		stop

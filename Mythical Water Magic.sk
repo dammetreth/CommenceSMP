@@ -1,0 +1,112 @@
+
+function castWaterSpell(p: player):
+#	send "{@spelluse} SPELL INITIATION" to {_p}
+	play sound "minecraft:block.water.ambient" at volume 1 at pitch 1 at {_p}'s location
+	play sound "minecraft:entity.dolphin.play" at volume 0.6 at pitch 1.2 at {_p}'s location
+	loop {Mythical::%{_p}%::MagicPower} + 6 ? 6 times:
+		set {_radius} to loop-value * 0.3
+		loop 36 times:
+			set {_angle} to loop-value-2 * 10
+			set {_x} to cos({_angle}) * {_radius}
+			set {_z} to sin({_angle}) * {_radius}
+			draw random integer between 1 and 10 of splash at location of {_p} offset by vector({_x}, 0.05, {_z})
+			draw random integer between 1 and 10 of bubble pop at location of {_p} offset by vector({_x}, 0.05, {_z})
+			draw random integer between 1 and 10 of block particle using water at location of {_p} offset by vector({_x}, 0.05, {_z})
+		wait 5 ticks
+	play sound "minecraft:entity.generic.splash" at volume 1.1 at pitch 1 at {_p}'s location
+	wait 2 ticks
+
+#	send "{@spelluse} SPELL POWER" to {_p}
+	uncolored {Mythical::%{_p}%::Magic::Spell} contains "Aqua Ray":
+		play sound "minecraft:entity.guardian.attack" at volume 0.9 at pitch 1.3 at {_p}'s location
+		loop (distance between {_p} and {_p}'s target) times:
+			draw 20 of falling_water loop-value meters in front of {_p}'s head with offset vector(1, 1, 1) 
+			draw 20 of current_down at {_p}'s head with offset vector(random integer between 1 and 180, random integer between 1 and 180, random integer between 1 and 180) 
+			loop random integer between 1 and 180 times:
+				draw 1 of rain at {_p}
+				draw 1 of rain at {_p}'s target
+			wait 1 tick
+			{_p}'s target is a mob or a player
+			make {_p} damage {_p}'s target by 0.5 + {Mythical::%{_p}%::MagicPower} ? 0
+		draw random integer between 10 and 20 of block particle using water at location of {_p}'s target
+
+	else if uncolored {Mythical::%{_p}%::Magic::Spell} contains "Refresh":
+		play sound "minecraft:entity.guardian.attack" at volume 0.9 at pitch 1.3 at {_p}'s location
+		loop round(1 + {Mythical::%{_p}%::MagicPower} * 5) times:
+			heal {_p} by 0.5 + {Mythical::%{_p}%::MagicPower} ? 0
+		draw random integer between 10 and 20 of block particle using water at location of block above {_p}
+
+	else if uncolored {Mythical::%{_p}%::Magic::Spell} contains "Tidepull":
+		play sound "minecraft:entity.guardian.attack" at volume 0.9 at pitch 1.3 at {_p}'s location
+		loop all entities in radius 5 of {_p}:
+			loop-entity is a monster or mob:
+				push loop-entity towards {_p} with force ({Mythical::%{_p}%::MagicPower} ? 0.1) * 10
+			loop (distance between {_p} and loop-entity) times:
+				draw random integer between 10 and 20 of block particle using water 1 meter above loop-entity
+				wait 1 tick
+
+	else if uncolored {Mythical::%{_p}%::Magic::Spell} contains "Arctic Spear":
+		loop 40 times:
+			make {_p} shoot snowball at speed random number between 1 + {Mythical::%{_p}%::MagicPower} and 2 + {Mythical::%{_p}%::MagicPower}
+			wait 1 tick
+			{_p}'s target is a mob or a player:
+				damage {_p}'s target by 0.25
+#		clear {Mythical::%{_p}%::Blocks::*}
+#		add block 2 blocks above block 2 blocks in front of {_p} to {Mythical::%{_p}%::Blocks::*} if block 2 blocks above block 2 blocks in front of {_p} is air
+#		add block 2 blocks above block 3 blocks in front of {_p} to {Mythical::%{_p}%::Blocks::*} if block 2 blocks above block 3 blocks in front of {_p} is air
+#				{Mythical::%{_p}%::MagicPower} is more than 1:
+#					add block 1 blocks above block to the right of block in front of {_p} to {Mythical::%{_p}%::Blocks::*} if block 1 blocks above block to the right of block in front of {_p} is air
+#					add block 2 blocks above block to the right of block in front of {_p} to {Mythical::%{_p}%::Blocks::*} if block 2 blocks above block to the right of block in front of {_p} is air
+#				{Mythical::%{_p}%::MagicPower} is more than 2:
+#					add block 1 blocks above block to the left of block in front of {_p} to {Mythical::%{_p}%::Blocks::*} if block 1 blocks above block to the left of block in front of {_p} is air
+#					add block 2 blocks above block to the left of block in front of {_p} to {Mythical::%{_p}%::Blocks::*} if block 2 blocks above block to the left of block in front of {_p} is air
+
+#		loop {Mythical::%{_p}%::Blocks::*}:
+#			play sound "minecraft:entity.guardian.attack" at volume 0.9 at pitch 1.3 at {_p}'s location
+#			draw 5 of block particle using bubble at loop-value
+#			set block at loop-value to ice or packed ice
+#			draw 3 of block particle using item_snowball at loop-value
+#			wait 3 tick
+#		wait 4 seconds
+#		loop {Mythical::%{_p}%::Blocks::*}:
+#			play sound "minecraft:entity.guardian.attack" at volume 0.9 at pitch 1.3 at {_p}'s location
+#			draw 5 of block particle using bubble at loop-value
+#			set block at loop-value to air
+#			draw 3 of block particle using item_snowball at loop-value
+#			wait 3 tick
+
+	else if uncolored {Mythical::%{_p}%::Magic::Spell} contains "Fish Siphon":
+		play sound "minecraft:entity.guardian.attack" at volume 0.9 at pitch 1.3 at {_p}'s location
+		loop all blocks in radius 5 of {_p}:
+			loop-block is water
+			chance of 11%:
+				drop tropical fish or pufferfish or cod or salmon 1.5 meters above loop-block if block 1.5 meters above loop-block is air
+			chance of 90%:
+				draw random integer between 10 and 20 of block particle using water 1.5 meters above loop-block
+			else:
+				drop cooked cod or cooked salmon 1.5 meters above loop-block if block 1.5 meters above loop-block is air
+			draw random integer between 10 and 20 of block particle using water 1.5 meters above loop-block
+
+	else if uncolored {Mythical::%{_p}%::Magic::Spell} contains "Mist Veil":
+		play sound "minecraft:entity.guardian.attack" at volume 0.9 at pitch 1.3 at {_p}'s location
+		loop 8 times:
+			loop all blocks in radius 5 of {_p}:
+				loop-block is air
+				draw 3 of campfire_cosy_smoke at loop-block
+				draw 3 of campfire_cosy_smoke at block above loop-block
+				draw 3 of campfire_cosy_smoke at block above block above loop-block
+			wait 2 ticks
+		loop all entities in radius 4 of {_p}:
+			loop-entity is not {_p}
+			apply poison 0.1 + {Mythical::%{_p}%::MagicPower} to loop-entity for 3 seconds
+	else:
+		send "{@spellfail}" to {_p}
+		clear {Mythical::%{_p}%::Magic::Wait}
+		stop
+
+# SPELL IDEA: ICE CAPTURE
+# SPELL IDEA: NEGATIVE EFFECT REMOVER (MILK)
+# SPELL IDEA: ATTACKERS EFFECTS GO TO VICTIM
+# SPELL IDEA: TSUNAMI
+# SPELL IDEA: BALANCE FIRE DAMAGE
+# SPELL IDEA: DISTANCE TRAVEL

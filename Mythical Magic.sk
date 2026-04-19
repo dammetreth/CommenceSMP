@@ -1,0 +1,48 @@
+
+options:
+	schoollearn:<##7DF29C> +<##D0944D>MAGIC SCHOOL &7You've Been Invited to the <##D0944D>
+	spelllearn:<##70797C> (<##855EC9>☀<##70797C>) &7New Spell Learned! <##D0944D>
+	spelluse:<##70797C> (<##855EC9>☀<##70797C>) <##CB625F>&7You Cast <##D0944D>
+	spelluseon:<##70797C> (<##855EC9>☀<##70797C>) <##CB625F>
+	spellfail:<##70797C> (<##855EC9>☀<##70797C>) <##CB625F>Your Spell Failed to Cast!
+	noloadedspells:<##70797C> (<##855EC9>☀<##70797C>) <##CB625F>Right Click to Load a Spell!
+	gamemodeerrormessage:<##70797C> (<##855EC9>☀<##70797C>) <##CB625F>You Must Be in Survival to Cast a ☀Spell!
+	spellcooldownmessage:<##70797C> (<##855EC9>☀<##70797C>) <##CB625F>Wait Before Trying a ☀Spell Again!
+	spellusenomana:<##70797C> (<##855EC9>🧪<##70797C>)<##CB625F> You're out of 🧪Mana!
+	spellusenoinfusion:<##70797C> (<##855EC9>⏳<##70797C>)<##CB625F> You're out of ⏳Infusion!
+
+function castSpell(p: player):
+#	clear {Mythical::%{_p}%::Magic::Wait}
+	{Mythical::%{_p}%::Magic::Wait} is not true
+	set {Mythical::%{_p}%::Magic::Wait} to true
+	{Mythical::%{_p}%::Magic::Mana} < 1:
+		send "{@spellusenomana}" to {_p}
+		wait 5 seconds
+		clear {Mythical::%{_p}%::Magic::Wait}
+		stop
+	{_p}'s gamemode is not survival:
+		send "{@gamemodeerrormessage}" to {_p}
+		clear {Mythical::%{_p}%::Magic::Wait}
+		stop
+	{Mythical::%{_p}%::Magic::Spell} is not set:
+		send "{@noloadedspells}" to {_p}
+	else:
+		assignSkill({_p}, "Magic")
+		chance of 5%:
+			send "{@spellfail}" to {_p}
+			clear {Mythical::%{_p}%::Magic::Wait}
+			stop
+		send "{@spelluse}%{Mythical::%{_p}%::Magic::Spell}%" to {_p}
+		{Mythical::Spells::Earth::*} contains {Mythical::%{_p}%::Magic::Spell}:
+			castEarthSpell({_p})
+		else if {Mythical::Spells::Water::*} contains {Mythical::%{_p}%::Magic::Spell}:
+			castWaterSpell({_p})
+		else if {Mythical::Spells::Fire::*} contains {Mythical::%{_p}%::Magic::Spell}:
+			castFireSpell({_p})
+		else if {Mythical::Spells::Air::*} contains {Mythical::%{_p}%::Magic::Spell}:
+			castAirSpell({_p})
+
+	remove 1 from {Mythical::%{_p}%::Magic::Mana}
+	wait 7 seconds
+	clear {Mythical::%{_p}%::Magic::Wait}
+
