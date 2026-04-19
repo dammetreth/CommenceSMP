@@ -1,0 +1,1676 @@
+
+options:
+	story:&8 <##70797C>(<##CC3B3B>&l!<##70797C>) <##D0944D>M<##D39650>y<##D89A52>t<##DD9D54>h<##E2A156>i<##E8A458>c<##EDA85A>a<##F2AC5C>l <##F7AF5D>R<##FCB35F>e<##FFB766>a<##FFB96B>l<##FFBC70>m<##FFBE75>s <##70797C>(<##CC3B3B>&l!<##70797C>)
+	info:<##70797C>(<##CC3B3B>&l!<##70797C>)<##CB625F>
+	worlds: "Mythical_Realms" or "Mythical_Resources"
+
+
+#function cutsceneNPCWalk(p: player, n: text, 
+
+function cutscenePlayer(p: player, c: integer):
+	{Mythical::Cutscene::Camera::%{_c}%::*} is set
+	{Mythical::%{_p}%::Cutscene::Player} is not set
+	set {Mythical::%{_p}%::Cutscene::Player} to {_p}'s location
+	make {_p} start flying
+	send " {@info} Starting Cutscene Playback for Scene %{_c}%" to {_p} if {Mythical::Debugger} is true
+	loop {Mythical::Cutscene::Camera::%{_c}%::*}:
+		#apply invisibility 99 without particles whilst hiding the potion icon to {_p} for 1 tick
+		#chance of 50%:
+		make {_p} fly
+		teleport {_p} to loop-value
+		wait 1 tick
+	send " {@info} Cutscene Playback for Scene %{_c}% Completed" to {_p} if {Mythical::Debugger} is true
+	teleport {_p} to {Mythical::%{_p}%::Cutscene::Player}
+	make {_p} stop flying if {_p}'s gamemode is survival
+	clear {Mythical::%{_p}%::Cutscene::Player}
+
+function cutsceneRecorder(p: player, c: integer, t: integer):
+	{Mythical::Cutscene::Camera::%{_c}%::*} is not set
+	{Mythical::%{_p}%::Cutscene::Player} is not set
+	#set {Mythical::%{_p}%::Cutscene::Player} to {_p}'s location
+	send " {@info} Starting Cutscene Recording for Scene %{_c}% for %{_t}% Seconds" to {_p}
+	loop ({_t} * 20) times:
+		set the fly speed of {_p} to 0.01
+		add {_p}'s location to {Mythical::Cutscene::Camera::%{_c}%::*}
+		send " {@info} Recorded Frame %loop-value%/%amount of {Mythical::Cutscene::Camera::%{_c}%::*}%" to {_p}
+		wait 1 tick
+	send " {@info} Cutscene Recording for Scene %{_c}% Completed at %{_t}% Seconds and %amount of {Mythical::Cutscene::Camera::%{_c}%::*}% Total Frames" to {_p}
+	send " {@info} Play it Back With /mrcutsceneadmin playcutscene %{_c}%" to {_p}
+	#teleport {_p} to {Mythical::%{_p}%::Cutscene::Player}
+	clear {Mythical::%{_p}%::Cutscene::Player}
+
+function cutsceneMaster(p: player, n: text, t: integer, s: text):
+#	clear {Mythical::Cutscene::*}
+	{Mythical::Toggle} is true
+	{_p}'s world is {@worlds}
+	set {Mythical::%{_p}%::Cutscene::Progress} to 1 if {Mythical::%{_p}%::Cutscene::Progress} is not set
+	clear {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%}
+	{Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+	set {Mythical::%{_p}%::Cutscene::NPC} to {Mythical::NPC::%{_n}%} if {_n} is not "None"
+	set {Mythical::%{_p}%::Cutscene::Trigger} to {_t}
+	set {Mythical::%{_p}%::Cutscene::Type} to {_s}
+
+	#{Mythical::%{_p}%::Cutscene::NPC} UUID {_n}
+	#{Mythical::%{_p}%::Cutscene::Trigger} INTEGER {_t}
+	#{Mythical::%{_p}%::Cutscene::Type} TEXT {_s}
+	#{Mythical::%{_p}%::Cutscene::Active} TRUE/FALSE
+	#{Mythical::%{_p}%::Cutscene::Player} LOCATION
+	#{Mythical::%{_p}%::Cutscene::Camera} LOCATION
+	#{Mythical::%{_p}%::Cutscene::Intermission} ACTION
+	set {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} to true
+
+	#---------------
+	#TEST CUTSCENES
+	#---------------
+
+	{Mythical::%{_p}%::Cutscene::Type} is "Test":
+		send "Passed Test CUTSCENE TYPE CHECKER" to {_p}
+		execute console command "/npc select %{Mythical::%{_p}%::Cutscene::NPC}%"
+		execute console command "/npc look"
+		send "Passed Test NPC SELECTOR" to {_p}
+
+		#NPC WALK INTERMISSION
+		loop 4 times:
+			execute console command "/npc pathto %block under {_p}'s x-coordinate% %{_p}'s y-coordinate% %block under {_p}'s z-coordinate%"
+			send "Passed Test NPC PATHFINDER" to {_p}
+			set {Mythical::%{_p}%::Cutscene::Intermission} to block under {_p}
+			send "Passed Test INTERMISSION ASSIGNER" to {_p}
+			loop 999 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if blocks in radius 2 of block under {Mythical::%{_p}%::Cutscene::NPC} contain {Mythical::%{_p}%::Cutscene::Intermission}
+			send "Passed Test %loop-value% FIND %{Mythical::%{_p}%::Cutscene::Intermission}%" to {_p}
+		execute console command "/npc panimate START_ELYTRA"
+		wait 5 ticks
+		execute console command "/npc panimate ARM_SWING"
+		wait 5 ticks
+		execute console command "/npc panimate ARM_SWING_OFFHAND"
+		wait 5 ticks
+		execute console command "/npc panimate CRIT"
+		wait 5 ticks
+		execute console command "/npc panimate EAT_FOOD"
+		wait 5 ticks
+		execute console command "/npc panimate HURT"
+		wait 5 ticks
+		execute console command "/npc panimate LEAVE_BED"
+		wait 5 ticks
+		execute console command "/npc panimate MAGIC_CRIT"
+		wait 5 ticks
+		execute console command "/npc panimate SIT"
+		wait 5 ticks
+		execute console command "/npc panimate SLEEP"
+		wait 5 ticks
+		execute console command "/npc panimate SNEAK"
+		wait 5 ticks
+		execute console command "/npc panimate STOP_SITTING"
+		execute console command "/npc panimate STOP_SLEEPING"
+		execute console command "/npc panimate STOP_SNEAKING"
+		execute console command "/npc panimate STOP_ELYTRA"
+
+		execute console command "/npc look"
+
+	else if {Mythical::%{_p}%::Cutscene::Type} is "Story":
+
+	#------------------
+	#BEGINNING CUTSCENE
+	#------------------
+		{Mythical::%{_p}%::Cutscene::Trigger} is 1:
+			{Mythical::FastTutorial} is not set:
+				wait 5 seconds
+				#SPECIAL EVENT INTERMISSION
+				send "" to {_p}
+				send " {@info} %{_p}'s display name ? {_p}%<#CB625F>, a wonderous young curious one," to {_p}
+				wait 10 ticks
+				send "" to {_p}
+				send " {@info} had a pleasant stroll through the woods when..." to {_p}
+				drop paper named "Mysterious Note" 1.5 meters above location(-631.5, -9, 1161.5, world("Mythical_Realms"))
+				set block 5 meters above location(-631.5, -9, 1161.5, world("Mythical_Realms")) to glowstone
+				cutscenePlayer({_p}, 1)#CAMERA TO FALLING PAPER
+				wait 2 seconds
+				send "" to {_p}
+				send " {@info} Did a paper just drop out of thin air up ahead?" to {_p}
+				wait 7 ticks
+				send " {@info} Hmm, wonder what that could be..." to {_p}
+				loop 49 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if {_p}'s inventory contains paper named "Mysterious Note"
+				set block 5 meters above location(-631.5, -9, 1161.5, world("Mythical_Realms")) to air
+
+				#DIALOGUE
+				set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::BigA}
+				set {Mythical::%{_p}%::NPCTemp} to "??? ??????"
+				set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+				execute {_p} command "/diastory tutorialnote clear"
+				loop 19 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+				#BLOCK PLACEMENT
+				clear {Mythical::Cutscene::Blocks::*}
+				add block at location(-635.5, -8, 1163.5, world("Mythical_Realms")), location(-639.5, -8, 1160.5, world("Mythical_Realms")), location(-643.5, -8, 1163.5, world("Mythical_Realms")), location(-648.5, -8, 1161.5, world("Mythical_Realms")) and location(-651.5, -8, 1164.5, world("Mythical_Realms")) to {Mythical::Cutscene::Blocks::*}
+				loop 49 times:
+					loop {Mythical::Cutscene::Blocks::*}:
+						play sound "block.grass.break" at volume 100 at pitch 10 to {_p}
+						set block below block at loop-value-2 to lantern
+						chance of 25%:
+							wait 4 ticks
+						chance of 50%:
+							wait 3 ticks
+						chance of 75%:
+							wait 2 ticks
+						wait 1 tick
+					loop {Mythical::Cutscene::Blocks::*}:
+						play sound "block.grass.place" at volume 100 at pitch 10 to {_p}
+						set block below block at loop-value-2 to air
+						chance of 25%:
+							wait 4 ticks
+						chance of 50%:
+							wait 3 ticks
+						chance of 75%:
+							wait 2 ticks
+						wait 1 tick
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if blocks in radius 4 of block under {_p} contain block at location(-650, -9, 1162, world("Mythical_Realms"))
+				loop {Mythical::Cutscene::Blocks::*}:
+					play sound "block.grass.place" at volume 100 at pitch 10 to {_p}
+					set block below block at loop-value to air
+					chance of 25%:
+						wait 4 ticks
+					chance of 25%:
+						wait 3 ticks
+					chance of 25%:
+						wait 2 ticks
+					chance of 25%:
+						wait 1 ticks
+
+				clear {_p}'s inventory
+
+				set {Mythical::%{_p}%::Cutscene::NPC} to {Mythical::NPC::BigA}
+				set {Mythical::NPC::Selected} to {Mythical::NPC::BigA}
+				execute console command "/npc select ""Big Azrael"""
+				wait 1 tick
+				teleport {Mythical::%{_p}%::Cutscene::NPC} to location(-643.5, -41, 1146.5, world("Mythical_Realms"))
+				execute console command "/npc moveto -643.5 -41 1146.5"
+				wait 1 tick
+				execute console command "/npc pathto -628 -41 1153"
+				wait 1 tick
+				execute console command "/npc attribute movement_speed 0.2"
+
+				teleport {_p} to {Mythical::Area::HouseTutorial}
+
+				set {Mythical::%{_p}%::Subtitles} to true
+				set {Mythical::%{_p}%::Tracker} to true
+				set {Mythical::%{_p}%::Sidebar} to true
+				set {Mythical::%{_p}%::ContDialogue} to false
+				set {Mythical::%{_p}%::Sound} to true
+				set {Mythical::%{_p}%::Music} to true
+				#set {Mythical::%{_p}%::Music::Track} to ""
+				
+				#apply slowness 2 without particles whilst hiding the potion icon to {_p} for 240 seconds
+
+				#NPC PATHTO
+				set {Mythical::%{_p}%::Cutscene::NPC} to {Mythical::NPC::BigA}
+				execute console command "/npc select %{Mythical::%{_p}%::Cutscene::NPC}'s UUID%" if {Mythical::NPC::Selected} is not {Mythical::NPC::BigA}
+				execute console command "/npc pathto -636 -41 1152"
+				set {Mythical::%{_p}%::Cutscene::Intermission} to block at location(-626, -41, 1152, world("Mythical_Realms"))
+				loop 4 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if blocks in radius 2 of block under {Mythical::%{_p}%::Cutscene::NPC} contain {Mythical::%{_p}%::Cutscene::Intermission}
+
+				#DIALOGUE
+				set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::BigA}
+				set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+				set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+				execute {_p} command "/diastory tutorialroom1 clear"
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+				#NPC PATHTO
+				set {Mythical::%{_p}%::Cutscene::NPC} to {Mythical::NPC::BigA}
+				execute console command "/npc select %{Mythical::%{_p}%::Cutscene::NPC}'s UUID%" if {Mythical::NPC::Selected} is not {Mythical::NPC::BigA}
+				execute console command "/npc pathto -636 -41 1155"
+				set {Mythical::%{_p}%::Cutscene::Intermission} to block at location(-636, -41, 1155, world("Mythical_Realms"))
+				loop 3 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if blocks in radius 2 of block under {Mythical::%{_p}%::Cutscene::NPC} contain {Mythical::%{_p}%::Cutscene::Intermission}
+
+				#DIALOGUE
+				set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::BigA}
+				set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+				set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+				execute {_p} command "/diastory tutorialroom2 clear"
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+				#NPC PATHTO
+				set {Mythical::%{_p}%::Cutscene::NPC} to {Mythical::NPC::BigA}
+				execute console command "/npc select %{Mythical::%{_p}%::Cutscene::NPC}'s UUID%" if {Mythical::NPC::Selected} is not {Mythical::NPC::BigA}
+				execute console command "/npc pathto -645 -41 1157"
+				set {Mythical::%{_p}%::Cutscene::Intermission} to block at location(-645, -41, 1157, world("Mythical_Realms"))
+				loop 6 times:
+					wait 1 second
+
+				#DIALOGUE
+				set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::BigA}
+				set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+				set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+				execute {_p} command "/diastory tutorialroom3 clear"
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+				#NPC PATHTO
+				set {Mythical::%{_p}%::Cutscene::NPC} to {Mythical::NPC::BigA}
+				execute console command "/npc select %{Mythical::%{_p}%::Cutscene::NPC}'s UUID%" if {Mythical::NPC::Selected} is not {Mythical::NPC::BigA}
+				execute console command "/npc pathto -638 -41 1167"
+				set {Mythical::%{_p}%::Cutscene::Intermission} to block at location(-638, -41, 1167, world("Mythical_Realms"))
+				loop 2 times:
+					wait 1 second
+
+				#DIALOGUE
+				set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::BigA}
+				set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+				set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+				execute {_p} command "/diastory tutorialroom4 clear"
+				execute console command "/npc panimate SNEAK"
+				execute console command "/npc attribute movement_speed 0.1"
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+				wait 2 seconds
+
+				execute console command "/npc panimate STOP_SNEAKING"
+				execute console command "/npc attribute movement_speed 0.2"
+
+				#NPC PATHTO
+				set {Mythical::%{_p}%::Cutscene::NPC} to {Mythical::NPC::BigA}
+				execute console command "/npc select %{Mythical::%{_p}%::Cutscene::NPC}'s UUID%" if {Mythical::NPC::Selected} is not {Mythical::NPC::BigA}
+				execute console command "/npc pathto -633 -41 1165"
+				set {Mythical::%{_p}%::Cutscene::Intermission} to block at location(-633, -41, 1165, world("Mythical_Realms"))
+				loop 9 times:
+					wait 1 second
+
+				#DIALOGUE
+				set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::BigA}
+				set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+				set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+				execute {_p} command "/diastory tutorialroom5 clear"
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+				#NPC PATHTO
+				set {Mythical::%{_p}%::Cutscene::NPC} to {Mythical::NPC::BigA}
+				execute console command "/npc select %{Mythical::%{_p}%::Cutscene::NPC}'s UUID%" if {Mythical::NPC::Selected} is not {Mythical::NPC::BigA}
+				execute console command "/npc pathto -619 -41 1170"
+				set {Mythical::%{_p}%::Cutscene::Intermission} to block at location(-619, -41, 1170, world("Mythical_Realms"))
+				loop 9 times:
+					wait 1 second
+
+				#DIALOGUE
+				set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::BigA}
+				set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+				set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+				execute {_p} command "/diastory tutorialroom6 clear"
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+				#NPC PATHTO
+				set {Mythical::%{_p}%::Cutscene::NPC} to {Mythical::NPC::BigA}
+				execute console command "/npc select %{Mythical::%{_p}%::Cutscene::NPC}'s UUID%" if {Mythical::NPC::Selected} is not {Mythical::NPC::BigA}
+				execute console command "/npc pathto -643 -41 1171"
+				set {Mythical::%{_p}%::Cutscene::Intermission} to block at location(-643, -41, 1171, world("Mythical_Realms"))
+				loop 9 times:
+					wait 1 second
+
+				#DIALOGUE
+				set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::BigA}
+				set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+				set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+				execute {_p} command "/diastory tutorialroom7 clear"
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+				#NPC PATHTO
+				set {Mythical::%{_p}%::Cutscene::NPC} to {Mythical::NPC::BigA}
+				execute console command "/npc select %{Mythical::%{_p}%::Cutscene::NPC}'s UUID%" if {Mythical::NPC::Selected} is not {Mythical::NPC::BigA}
+				execute console command "/npc pathto -631 -49 1160"
+				set {Mythical::%{_p}%::Cutscene::Intermission} to block at location(-631, -49, 1160, world("Mythical_Realms"))
+				loop 19 times:
+					wait 1 second
+
+				#DIALOGUE
+				set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::BigA}
+				set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+				set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+				execute {_p} command "/diastory tutorialroom8 clear"
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if {Mythical::%{_p}%::Dialogue} is not true
+
+				execute console command "/npc pathto -628 -49 1160"
+
+				#PLAYER GOTO LOCATION INTERMISSION
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if blocks in radius 3 of block under {_p} contain block at location(-628, -49, 1160, world("Mythical_Realms"))
+
+				teleport {Mythical::%{_p}%::Cutscene::NPC} to {Mythical::%{Mythical::%{_p}%::Cutscene::NPC}%::Locations::Home}
+				execute console command "/npc moveto -803.5 84 1386"
+				clear {Mythical::NPC::Selected}
+
+				clear {Mythical::Cutscene::Blocks::*}
+				add block at location(-640, -61, 1166, world("Mythical_Realms")), block at location(-641, -61, 1162, world("Mythical_Realms")), block at location(-642, -61, 1158, world("Mythical_Realms")), block at location(-641, -61, 1154, world("Mythical_Realms")) and block at location(-640, -61, 1150, world("Mythical_Realms")) to {Mythical::Cutscene::Blocks::*}
+
+				loop {Mythical::Cutscene::Blocks::*}:
+					set block at loop-value to air
+
+				teleport {_p} to {Mythical::Area::Questionton}
+
+				#apply slowness 999 without particles whilst hiding the potion icon to {_p} for 180 seconds
+				set the generic jump strength attribute of {_p} to 0
+
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+				remove potion effect of slowness from {_p}'s active potion effects
+				set the generic jump strength attribute of {_p} to 0.41999998688697815
+
+				wait 2 seconds
+				
+				#ARMOR STAND TEXT DISPLAY
+				spawn armor stand 1.5 meters above location(-631, -61, 1158, world("Mythical_Realms")):
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Are you ready, dear mortal? To answer some questions to determine your fate in this world..."
+
+				wait 5 seconds
+
+				send title "&6" with subtitle "Jump On A Pillar to Choose" to {_p} for 16 seconds
+
+				#BLOCK PLACEMENT
+				#loop {Mythical::Cutscene::Blocks::*}:
+				#	play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				#	set block at loop-value to structure block
+				#	wait 17 ticks
+				
+				kill all armor stands in radius 14 of location(-631, -61, 1158, world("Mythical_Realms"))
+				
+				#ARMOR STAND TEXT DISPLAY
+				spawn armor stand 1.5 meters above location(-631, -61, 1158, world("Mythical_Realms")):
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Prepare yourself, here's Question 1..."
+				
+				wait 3 seconds
+				
+				kill all armor stands in radius 14 of location(-631, -61, 1158, world("Mythical_Realms"))
+				
+				#ARMOR STAND TEXT DISPLAY QUESTION 1 COMBAT
+				spawn armor stand 1.5 meters above location(-631, -61, 1158, world("Mythical_Realms")):
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Which is your go-to combat style?"
+				set block at first element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above first element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Up Close Melee"
+				spawn armor stand 0.5 meters above first element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Sword, Axe, Spear"
+				set block at 2nd element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 2nd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Ranged Combat"
+				spawn armor stand 0.5 meters above 2nd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Magic, Bow, Crossbow"
+				set block at 3rd element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 3rd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Supportive Buffer"
+				spawn armor stand 0.5 meters above 3rd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Healer of Sorts"
+				set block at 4th element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 4th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Tactical Combat"
+				set block at 4th element of {Mythical::Cutscene::Blocks::*} to structure block
+				spawn armor stand 0.5 meters above 4th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Sneaky Ninja Style"
+				set block at 5th element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 5th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Avoid Confrontation"
+				spawn armor stand 0.5 meters above 5th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "RUN! Get me away!"
+				
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					block under {_p} is first element of {Mythical::Cutscene::Blocks::*}:
+						set {Mythical::%{_p}%::Questionton::1} to 1
+						send title "&6Ah, Up Close Melee!" with subtitle "Aren't there better options, though?" to {_p} for 8 seconds
+						stop loop
+					block under {_p} is 2nd element of {Mythical::Cutscene::Blocks::*}:
+						set {Mythical::%{_p}%::Questionton::1} to 2
+						send title "&6Ah, Ranged!" with subtitle "Aren't there better options, though?" to {_p} for 8 seconds
+						stop loop
+					block under {_p} is 3rd element of {Mythical::Cutscene::Blocks::*}:
+						send title "&6Ah, The Healer!" with subtitle "Aren't there better options, though?" to {_p} for 8 seconds
+						set {Mythical::%{_p}%::Questionton::1} to 3
+						stop loop
+					block under {_p} is 4th element of {Mythical::Cutscene::Blocks::*}:
+						send title "&6Ah, The Smart One!" with subtitle "Aren't there better options, though?" to {_p} for 8 seconds
+						set {Mythical::%{_p}%::Questionton::1} to 4
+						stop loop
+					block under {_p} is 5th element of {Mythical::Cutscene::Blocks::*}:
+						send title "&6Ah, The Runner!" with subtitle "Aren't there better options, though?" to {_p} for 8 seconds
+						set {Mythical::%{_p}%::Questionton::1} to 5
+						stop loop
+
+				kill all armor stands in radius 14 of location(-631, -61, 1158, world("Mythical_Realms"))
+
+				#BLOCK PLACEMENT
+				loop {Mythical::Cutscene::Blocks::*}:
+					play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+					set block at loop-value to air
+					wait 17 ticks
+				
+				#ARMOR STAND TEXT DISPLAY
+				spawn armor stand 1.5 meters above location(-631, -61, 1158, world("Mythical_Realms")):
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Nice Job %{_p}'s display name ? {_p}%&r, Let's Try Question 2..."
+
+				wait 5 seconds
+
+				kill all armor stands in radius 14 of location(-631, -61, 1158, world("Mythical_Realms"))
+				
+				#ARMOR STAND TEXT DISPLAY QUESTION 2 GAMEPLAY EXPERIENCE
+				spawn armor stand 1.5 meters above location(-631, -61, 1158, world("Mythical_Realms")):
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Which gameplay style do you reckon fits you the most?"
+				set block at first element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above first element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Explorer"
+				spawn armor stand 0.5 meters above first element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Finder of Each Secret"
+				set block at 2nd element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 2nd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Battler"
+				spawn armor stand 0.5 meters above 2nd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Combat and Magic"
+				set block at 3rd element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 3rd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Storyteller"
+				spawn armor stand 0.5 meters above 3rd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Builder of Lore"
+				set block at 4th element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 4th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Creator"
+				spawn armor stand 0.5 meters above 4th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Builder of Sorts"
+				set block at 5th element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 5th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Completionist"
+				spawn armor stand 0.5 meters above 5th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Must. Get. It. ALL!"
+				
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					block under {_p} is first element of {Mythical::Cutscene::Blocks::*}:
+						set {Mythical::%{_p}%::Questionton::2} to 1
+						send title "&6Ooh, The Explorer!" with subtitle "Do you truly feel good about that, though?" to {_p} for 8 seconds
+						stop loop
+					block under {_p} is 2nd element of {Mythical::Cutscene::Blocks::*}:
+						set {Mythical::%{_p}%::Questionton::2} to 2
+						send title "&6Ah, The Battler!" with subtitle "Do you truly feel good about that, though?" to {_p} for 8 seconds
+						stop loop
+					block under {_p} is 3rd element of {Mythical::Cutscene::Blocks::*}:
+						send title "&6Ah, The Storyteller!" with subtitle "Do you truly feel good about that, though?" to {_p} for 8 seconds
+						set {Mythical::%{_p}%::Questionton::2} to 3
+						stop loop
+					block under {_p} is 4th element of {Mythical::Cutscene::Blocks::*}:
+						send title "&6Ah, The Creator!" with subtitle "Do you truly feel good about that, though?" to {_p} for 8 seconds
+						set {Mythical::%{_p}%::Questionton::2} to 4
+						stop loop
+					block under {_p} is 5th element of {Mythical::Cutscene::Blocks::*}:
+						send title "&6Ah, The Completionist!" with subtitle "Do you truly feel good about that, though?" to {_p} for 8 seconds
+						set {Mythical::%{_p}%::Questionton::2} to 5
+						stop loop
+
+				kill all armor stands in radius 14 of location(-631, -61, 1158, world("Mythical_Realms"))
+
+				#BLOCK PLACEMENT
+				loop {Mythical::Cutscene::Blocks::*}:
+					play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+					set block at loop-value to air
+					wait 17 ticks
+				
+				#ARMOR STAND TEXT DISPLAY
+				spawn armor stand 1.5 meters above location(-631, -61, 1158, world("Mythical_Realms")):
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Very interesting... Here's Question 3"
+
+				wait 5 seconds
+
+				kill all armor stands in radius 14 of location(-631, -61, 1158, world("Mythical_Realms"))
+				
+				#ARMOR STAND TEXT DISPLAY QUESTION 3 INTERACTION
+				spawn armor stand 1.5 meters above location(-631, -61, 1158, world("Mythical_Realms")):
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "How often do you think you interact with other players?"
+				set block at first element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above first element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Always"
+				spawn armor stand 0.5 meters above first element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "You'd Chat With Cows If Ya Could"
+				set block at 2nd element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 2nd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Often"
+				spawn armor stand 0.5 meters above 2nd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "You Chat Regularly"
+				set block at 3rd element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 3rd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Sometimes"
+				spawn armor stand 0.5 meters above 3rd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Only If I Feel Like It"
+				set block at 4th element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 4th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Rarely"
+				spawn armor stand 0.5 meters above 4th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "I'm Not Much of a Chatter"
+				set block at 5th element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 5th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Never"
+				spawn armor stand 0.5 meters above 5th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "I'll Be Dead Before I Chat"
+				
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					block under {_p} is first element of {Mythical::Cutscene::Blocks::*}:
+						set {Mythical::%{_p}%::Questionton::3} to 1
+						send title "&6Hmm, Always, Huh?" with subtitle "That's really you, though?" to {_p} for 8 seconds
+						stop loop
+					block under {_p} is 2nd element of {Mythical::Cutscene::Blocks::*}:
+						set {Mythical::%{_p}%::Questionton::3} to 2
+						send title "&6Hmm, Often, Huh?" with subtitle "That's really you, though?" to {_p} for 8 seconds
+						stop loop
+					block under {_p} is 3rd element of {Mythical::Cutscene::Blocks::*}:
+						send title "&6Hmm, Sometimes, Huh?" with subtitle "That's really you, though?" to {_p} for 8 seconds
+						set {Mythical::%{_p}%::Questionton::3} to 3
+						stop loop
+					block under {_p} is 4th element of {Mythical::Cutscene::Blocks::*}:
+						send title "&6Hmm, Rarely, Huh?" with subtitle "That's really you, though?" to {_p} for 8 seconds
+						set {Mythical::%{_p}%::Questionton::3} to 4
+						stop loop
+					block under {_p} is 5th element of {Mythical::Cutscene::Blocks::*}:
+						send title "&6Hmm, Never, Huh?" with subtitle "That's really you, though?" to {_p} for 8 seconds
+						set {Mythical::%{_p}%::Questionton::3} to 5
+						stop loop
+
+				kill all armor stands in radius 14 of location(-631, -61, 1158, world("Mythical_Realms"))
+
+				#BLOCK PLACEMENT
+				loop {Mythical::Cutscene::Blocks::*}:
+					play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+					set block at loop-value to air
+					wait 17 ticks
+				
+				#ARMOR STAND TEXT DISPLAY
+				spawn armor stand 1.5 meters above location(-631, -61, 1158, world("Mythical_Realms")):
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "And now Question 4..."
+
+				wait 5 seconds
+
+				kill all armor stands in radius 14 of location(-631, -61, 1158, world("Mythical_Realms"))
+				
+				#ARMOR STAND TEXT DISPLAY QUESTION 4 ACTIVITIES
+				spawn armor stand 1.5 meters above location(-631, -61, 1158, world("Mythical_Realms")):
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Which speaks to your soul the most?"
+				set block at first element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above first element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Questing & Adventuring"
+				spawn armor stand 0.5 meters above first element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Finding Epic Stories"
+				set block at 2nd element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 2nd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Minigames & Challenges"
+				spawn armor stand 0.5 meters above 2nd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Games! Games! Games!"
+				set block at 3rd element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 3rd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Knowledge & Exploration"
+				spawn armor stand 0.5 meters above 3rd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Knowing it All"
+				set block at 4th element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 4th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "PvP & PvE"
+				spawn armor stand 0.5 meters above 4th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Seeking Out the Baddies"
+				set block at 5th element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 5th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Building & Creating"
+				spawn armor stand 0.5 meters above 5th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Showing My Creative Side"
+				
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					block under {_p} is first element of {Mythical::Cutscene::Blocks::*}:
+						set {Mythical::%{_p}%::Questionton::4} to 1
+						send title "&6Questing & Adventuring..." with subtitle "Your time is precious, though." to {_p} for 8 seconds
+						stop loop
+					block under {_p} is 2nd element of {Mythical::Cutscene::Blocks::*}:
+						set {Mythical::%{_p}%::Questionton::4} to 2
+						send title "&6Minigames & Challenges..." with subtitle "Your time is precious, though." to {_p} for 8 seconds
+						stop loop
+					block under {_p} is 3rd element of {Mythical::Cutscene::Blocks::*}:
+						send title "&6Knowledge & Exploration..." with subtitle "Your time is precious, though." to {_p} for 8 seconds
+						set {Mythical::%{_p}%::Questionton::4} to 3
+						stop loop
+					block under {_p} is 4th element of {Mythical::Cutscene::Blocks::*}:
+						send title "&6PvP & PvE..." with subtitle "Your time is precious, though." to {_p} for 8 seconds
+						set {Mythical::%{_p}%::Questionton::4} to 4
+						stop loop
+					block under {_p} is 5th element of {Mythical::Cutscene::Blocks::*}:
+						send title "&6Creating & Building..." with subtitle "Your time is precious, though." to {_p} for 8 seconds
+						set {Mythical::%{_p}%::Questionton::4} to 5
+						stop loop
+
+				kill all armor stands in radius 14 of location(-631, -61, 1158, world("Mythical_Realms"))
+
+				#BLOCK PLACEMENT
+				loop {Mythical::Cutscene::Blocks::*}:
+					play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+					set block at loop-value to air
+					wait 17 ticks
+				
+				#ARMOR STAND TEXT DISPLAY
+				spawn armor stand 1.5 meters above location(-631, -61, 1158, world("Mythical_Realms")):
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "And finally, answering this will determine your fate..."
+
+				wait 5 seconds
+
+				kill all armor stands in radius 14 of location(-631, -61, 1158, world("Mythical_Realms"))
+				
+				#ARMOR STAND TEXT DISPLAY QUESTION 5 CUSTOMIZATION
+				spawn armor stand 1.5 meters above location(-631, -61, 1158, world("Mythical_Realms")):
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Which is most important to you?"
+				set block at first element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above first element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Aesthetics"
+				spawn armor stand 0.5 meters above first element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Making it Perfect"
+				set block at 2nd element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 2nd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Unique Abilities & Powers"
+				spawn armor stand 0.5 meters above 2nd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "I'm The Best, Better Than the Rest!"
+				set block at 3rd element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 3rd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Personal Style Tailoring"
+				spawn armor stand 0.5 meters above 3rd element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Looking Like a Boss"
+				set block at 4th element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 4th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Exploring Diverse Lore"
+				spawn armor stand 0.5 meters above 4th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Telling Epic Stories"
+				set block at 5th element of {Mythical::Cutscene::Blocks::*} to structure block
+				play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+				wait 17 ticks
+				spawn armor stand 0.8 meters above 5th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Being Your Own Thang"
+				spawn armor stand 0.5 meters above 5th element of {Mythical::Cutscene::Blocks::*}:
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "I'm One-of-a-Kind"
+				
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					block under {_p} is first element of {Mythical::Cutscene::Blocks::*}:
+						set {Mythical::%{_p}%::Questionton::5} to 1
+						send title "&6Really? Aesthetics?" with subtitle "What's so good about that anyway?" to {_p} for 8 seconds
+						stop loop
+					block under {_p} is 2nd element of {Mythical::Cutscene::Blocks::*}:
+						set {Mythical::%{_p}%::Questionton::5} to 2
+						send title "&6Really? Unique Abilities?" with subtitle "What's so good about that anyway?" to {_p} for 8 seconds
+						stop loop
+					block under {_p} is 3rd element of {Mythical::Cutscene::Blocks::*}:
+						send title "&6Really? Your Personal Style?" with subtitle "What's so good about that anyway?" to {_p} for 8 seconds
+						set {Mythical::%{_p}%::Questionton::5} to 3
+						stop loop
+					block under {_p} is 4th element of {Mythical::Cutscene::Blocks::*}:
+						send title "&6Really? Exploring Lore?" with subtitle "What's so good about that anyway?" to {_p} for 8 seconds
+						set {Mythical::%{_p}%::Questionton::5} to 4
+						stop loop
+					block under {_p} is 5th element of {Mythical::Cutscene::Blocks::*}:
+						send title "&6Really? Your Own Thing?" with subtitle "What's so good about that anyway?" to {_p} for 8 seconds
+						set {Mythical::%{_p}%::Questionton::5} to 5
+						stop loop
+
+				kill all armor stands in radius 14 of location(-631, -61, 1158, world("Mythical_Realms"))
+
+				#BLOCK PLACEMENT
+				loop {Mythical::Cutscene::Blocks::*}:
+					play sound "enchant.thorns.hit" at volume 100 at pitch 0.1 to {_p}
+					set block at loop-value to air
+					wait 17 ticks
+
+				wait 5 seconds
+				
+				#ARMOR STAND TEXT DISPLAY
+				spawn armor stand 1.5 meters above location(-631, -61, 1158, world("Mythical_Realms")):
+					set gravity of entity to false
+					set ai of entity to false
+					set entity's scale attribute to 0.01
+				make last spawned armor stand invisible
+				set display name of last spawned entity to "Great job. That will be all. I will now recommend you a Formtype..."
+
+				wait 5 seconds
+
+				kill all armor stands in radius 14 of location(-631, -61, 1158, world("Mythical_Realms"))
+				
+				send title "&6Great job, %{_p}'s display name ? {_p}%&6" with subtitle "That will be all. I will now recommend you a Formtype..." to {_p} for 8 seconds
+				send " {@info} &6Great job, %{_p}'s display name ? {_p}%&6" to {_p}
+				send " {@info} &fThat will be all. I will now recommend you a Formtype..." to {_p}
+
+			else:
+				send "" to {_p}
+				send " {@info} &4You're Being Expedited Through the Tutorial!" to {_p}
+
+			teleport {_p} to {Mythical::Area::ChamberForms}
+			execute console command "/mradmin setnpcdata"
+			clear {Mythical::%{_p}%::Dialogue}
+			
+			send title "&6Questionton64 is Undecided..." with subtitle "You're too mysterious, %{_p}'s display name ? {_p}%&r..." to {_p} for 15 seconds
+			send title "&6Questionton64 Chose Fate!" with subtitle "You should consider a <#4AA7D3>Waterform&r!" to {_p} for 15 seconds if {Mythical::%{_p}%::Questionton::2} is 3
+			send title "&6Questionton64 Chose Fate!" with subtitle "You should consider a <#C46D23>Fireform&r!" to {_p} for 15 seconds if {Mythical::%{_p}%::Questionton::2} is 4
+			send title "&6Questionton64 Chose Fate!" with subtitle "You should consider an <#776249>Earthform&r!" to {_p} for 15 seconds if {Mythical::%{_p}%::Questionton::2} is 2
+			send title "&6Questionton64 Chose Fate!" with subtitle "You should consider an <#776249>Earthform&r!" to {_p} for 15 seconds if {Mythical::%{_p}%::Questionton::2} is 5
+			send title "&6Questionton64 Chose Fate!" with subtitle "You should consider an <#A5B2B7>Airform&r!" to {_p} for 15 seconds if {Mythical::%{_p}%::Questionton::2} is 1
+			
+			#PLAYER PORTAL INTERMISSION
+			loop 999 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				{Mythical::%{_p}%::Form::Type} is set
+				stop loop if block under {_p} is crying obsidian
+
+			teleport {_p} to {Mythical::Area::StartingArea}
+			clear {Mythical::%{_p}%::Tutorial}
+
+			#PLAYER GOTO LOCATION INTERMISSION
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if blocks in radius 5 of block at {_p} contain block at location(-643, 74, 1166, world("Mythical_Realms"))
+			#send "hi im paul %{Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%}%" to {_p}
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Gupta}
+			set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName}
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+			execute {_p} command "/diastory tutorialhelper1 clear"
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			#PLAYER GOTO LOCATION INTERMISSION
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if blocks in radius 5 of block at {_p} contain block at location(-625, 74, 1181, world("Mythical_Realms"))
+
+			cutscenePlayer({_p}, 2)#MYTHICAL ABODE SHOT
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Jenkin}
+			set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName}
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+			execute {_p} command "/diastory tutorialhelper2 clear"
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+			set {Mythical::%{_p}%::Quest::Progress} to 1
+			
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+			cutscenePlayer({_p}, 3) #Mythical Abode Shot
+
+	#------------------------------
+	#BONEWART INTRODUCTION CUTSCENE
+	#------------------------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 3:
+			#DIALOGUE FINISHER
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			#NPC ASSIGNER
+			execute console command "/npc select ""Bonewart"""
+			wait 1 tick
+			execute console command "/npc moveto -587 64 1247"
+			wait 1 tick
+			execute console command "/npc pathto -594 64 1242"
+
+			wait 1 tick
+
+			#NPC ASSIGNER
+			execute console command "/npc select ""Cackle"""
+			wait 1 tick
+			execute console command "/npc moveto -587 64 1247"
+			wait 1 tick
+			execute console command "/npc pathto -594 64 1244"
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Bonewart}
+			set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+			execute {_p} command "/diastory introduction clear"
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			#NPC PATHTO
+			execute console command "/npc select ""Bonewart"""
+			execute console command "/npc pathto -599 64 1244"
+			set {Mythical::%{_p}%::Cutscene::Intermission} to block at location(-643, -41, 1171, world("Mythical_Realms"))
+
+			#NPC PATHTO
+			execute console command "/npc select ""Cackle"""
+			execute console command "/npc pathto -601 64 1243"
+			set {Mythical::%{_p}%::Cutscene::Intermission} to block at location(-643, -41, 1171, world("Mythical_Realms"))
+			loop 4 times:
+				wait 1 second
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Cackle}
+			set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+			execute {_p} command "/diastory introduction clear"
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			#NPC PATHTO
+			execute console command "/npc select ""Bonewart"""
+			execute console command "/npc pathto -594 64 1242"
+			set {Mythical::%{_p}%::Cutscene::Intermission} to block at location(-643, -41, 1171, world("Mythical_Realms"))
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Bonewart}
+			set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+			execute {_p} command "/diastory introduction2 clear"
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			#NPC PATHTO
+			execute console command "/npc select ""Bonewart"""
+			execute console command "/npc pathto -594 64 1246"
+			set {Mythical::%{_p}%::Cutscene::Intermission} to block at location(-643, -41, 1171, world("Mythical_Realms"))
+
+			#NPC RESTORER
+			execute console command "/npc select ""Bonewart"""
+			execute console command "/npc moveto -539 64 1179"
+			clear {Mythical::NPC::Selected}
+			execute console command "/npc select ""Cackle"""
+			execute console command "/npc moveto -539 64 1179"
+			clear {Mythical::NPC::Selected}
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Flinket}
+			set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+			execute {_p} command "/diastory freakout clear"
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::BigA}
+			set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+			execute {_p} command "/diastory questvoice1 clear"
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+			
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+			cutscenePlayer({_p}, 4)#Magic School Shot
+
+	#-------------------------------
+	#PROFESSOR INTRODUCTION CUTSCENE
+	#-------------------------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 4:
+
+			uncolored {Mythical::%{_p}%::Form::Type} does not contain "Air":
+				set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Whick}
+			
+				#PLAYER TP
+				teleport {_p} 2 meters east of {Mythical::%{_p}%::UUIDNPCTemp}
+				make {_p} face {Mythical::%{_p}%::UUIDNPCTemp}
+
+				#DIALOGUE
+				set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName}
+				set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+				execute {_p} command "/diastory introduction clear"
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			uncolored {Mythical::%{_p}%::Form::Type} does not contain "Water":
+				set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Ajabadada}
+			
+				#PLAYER TP
+				teleport {_p} 2 meters west of {Mythical::%{_p}%::UUIDNPCTemp}
+				make {_p} face {Mythical::%{_p}%::UUIDNPCTemp}
+
+				#DIALOGUE
+				set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName}
+				set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+				execute {_p} command "/diastory introduction clear"
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			uncolored {Mythical::%{_p}%::Form::Type} does not contain "Fire":
+				set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Esmund}
+			
+				#PLAYER TP
+				teleport {_p} 2 meters south of {Mythical::%{_p}%::UUIDNPCTemp}
+				make {_p} face {Mythical::%{_p}%::UUIDNPCTemp}
+
+				#DIALOGUE
+				set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName}
+				set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+				execute {_p} command "/diastory introduction clear"
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			uncolored {Mythical::%{_p}%::Form::Type} does not contain "Earth":
+				set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Griv}
+			
+				#PLAYER TP
+				teleport {_p} 2 meters north of {Mythical::%{_p}%::UUIDNPCTemp}
+				make {_p} face {Mythical::%{_p}%::UUIDNPCTemp}
+
+				#DIALOGUE
+				set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName}
+				set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+				execute {_p} command "/diastory introduction clear"
+				loop 99 times:
+					wait 1 second
+					stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+					stop loop if {Mythical::%{_p}%::Dialogue} is not set
+			
+			wait 20 ticks
+			
+			teleport {_p} to location(-628.5, 63, 1280.5, world("Mythical_Realms"))
+			make {_p} face block east of block at {_p}
+			
+			wait 20 ticks
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to "All Professors"
+			set {Mythical::%{_p}%::NPCTemp} to "All Professors"
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>Together, we form the amazing Prism Promenade School of Magic!"
+			execute {_p} command "/diastory player clear"
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+			
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#---------------------------
+	#WHAT'S THAT SMELL? CUTSCENE
+	#---------------------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 5:
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {_p}'s UUID
+			set {Mythical::%{_p}%::NPCTemp} to {_p}'s display name ? {_p}
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>Oh me, oh my, what is that scrumptious, immaculate smell?"
+			execute {_p} command "/diastory player clear"
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+			
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#---------------------------
+	#INVASION WARNING 1 CUTSCENE
+	#---------------------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 6:
+
+			#PLAYER GOTO LOCATION INTERMISSION
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if blocks in radius 8 of {_p} contain block at location(-579, 64, 1356, world("Mythical_Realms"))
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Fennick} or {Mythical::NPC::Butterlip}
+			set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+			execute {_p} command "/diastory invasionwarning clear"
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+			
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#---------------------------
+	#BONEWART'S WARNING CUTSCENE
+	#---------------------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 7:
+			#DIALOGUE FINISHER
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			#NPC ASSIGNER
+			execute console command "/npc select ""Bonewart"""
+			wait 1 tick
+			execute console command "/npc moveto -800 84 1395"
+			wait 1 tick
+			execute console command "/npc pathto -806 64 1386"
+
+			wait 1 tick
+
+			#NPC ASSIGNER
+			execute console command "/npc select ""Cackle"""
+			wait 1 tick
+			execute console command "/npc moveto -800 84 1395"
+			wait 1 tick
+			execute console command "/npc pathto -806 64 1388"
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Bonewart}
+			set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+			execute {_p} command "/diastory warning1 clear"
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			#NPC PATHTO
+			execute console command "/npc select ""Bonewart"""
+			execute console command "/npc pathto -808 64 1377"
+			set {Mythical::%{_p}%::Cutscene::Intermission} to block at location(-643, -41, 1171, world("Mythical_Realms"))
+
+			#NPC PATHTO
+			execute console command "/npc select ""Cackle"""
+			execute console command "/npc pathto -806 64 1378"
+			set {Mythical::%{_p}%::Cutscene::Intermission} to block at location(-643, -41, 1171, world("Mythical_Realms"))
+			loop 4 times:
+				wait 1 second
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Bonewart}
+			set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+			execute {_p} command "/diastory warning2 clear"
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Cackle}
+			set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+			execute {_p} command "/diastory warning1 clear"
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			#NPC PATHTO
+			execute console command "/npc select ""Bonewart"""
+			execute console command "/npc pathto -806 64 1386"
+			set {Mythical::%{_p}%::Cutscene::Intermission} to block at location(-643, -41, 1171, world("Mythical_Realms"))
+
+			#NPC PATHTO
+			execute console command "/npc select ""Cackle"""
+			execute console command "/npc pathto -806 64 1386"
+			set {Mythical::%{_p}%::Cutscene::Intermission} to block at location(-643, -41, 1171, world("Mythical_Realms"))
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Bonewart}
+			set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+			execute {_p} command "/diastory warning3 clear"
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			#NPC RESTORER
+			execute console command "/npc select ""Bonewart"""
+			execute console command "/npc moveto -539 64 1179"
+			clear {Mythical::NPC::Selected}
+			execute console command "/npc select ""Cackle"""
+			execute console command "/npc moveto -806 64 1388"
+			clear {Mythical::NPC::Selected}
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::BigA}
+			set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+			execute {_p} command "/diastory infostation clear"
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			cutscenePlayer({_p}, 6)#Mythical Information Station Shot
+			
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#------------------------------
+	#LEAFLIND'S CIRCUSGAME TUTORIAL
+	#------------------------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 8:
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Leaflind}
+			set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+			execute {_p} command "/diastory gametutorial clear"
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			execute {_p} command "/minigame"
+
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#---------------------------------
+	#MARYTON'S TOUR AROUND MOONCRESTON
+	#---------------------------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 9:
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Maryton}
+			set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+			execute {_p} command "/diastory housingtutorial clear"
+			loop 99 times:
+				chance of 5%:
+					cutscenePlayer({_p}, random integer between 9 and 14) #Mooncreston Shots
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			execute {_p} command "/housing"
+
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#---------------------------------
+	#BONEWART'S TRUE INTENTIONS
+	#---------------------------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 10:
+
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#-------------------
+	#THE GALLIANT GAZEBO
+	#-------------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 11:
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {_p}'s UUID
+			set {Mythical::%{_p}%::NPCTemp} to {_p}'s display name ? {_p}
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>What a beautiful area to relax and think about life..."
+			execute {_p} command "/diastory player clear"
+			loop 99 times:
+				cutscenePlayer({_p}, random integer between 15 and 18) #Gazebo Shots
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+			cutscenePlayer({_p}, 19) #Gazebo Shots
+
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#-----------------------
+	#THE WATER'S EDGE FOREST
+	#-----------------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 12:
+
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#-----------------
+	#FARMER'S TUTORIAL
+	#-----------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 13:
+
+			set {Mythical::%{_p}%::Quest::Main::Condition} to false
+
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#-----------------
+	#FISHER'S TUTORIAL
+	#-----------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 14:
+
+			set {Mythical::%{_p}%::Quest::Main::Condition} to false
+
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#-----------------
+	#BLOCKED OFF RUINS
+	#-----------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 15:
+
+			loop 99 times:
+				chance of 5%:
+					cutscenePlayer({_p}, 24) #Blocked Off Area Shot
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#------------------------------
+	#THE OAKSHADE COMMUNITY TRAGEDY
+	#------------------------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 16:
+
+			loop 99 times:
+				cutscenePlayer({_p}, random integer between 26 and 29) #Oakshade Community Shots
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+			cutscenePlayer({_p}, 30) #Oakshade Community Shots
+
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#----------------
+	#MINER'S TUTORIAL
+	#----------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 17:
+
+			set {Mythical::%{_p}%::Quest::Main::Condition} to false
+
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#---------------------------------
+	#THE OAKSHADE COMMUNITY DUNGEON
+	#---------------------------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 18:
+
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#---------------------------------
+	#THE OAKSHADE COMMUNITY DUNGEON
+	#---------------------------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 19:
+
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#----------------
+	#SECRET FIREPLACE
+	#----------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 20:
+
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#---------------
+	#HIPHONE'S STORY
+	#---------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 21:
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Hiphone}
+			set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+			execute {_p} command "/diastory mystory clear"
+			loop 99 times:
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+			
+			#PLAYER TP
+			teleport {_p} to location(-482.5, 63, 1112.5, world("Mythical_Realms"))
+
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+	#---------------
+	#THE MYSTIC GATE
+	#---------------
+		else if {Mythical::%{_p}%::Cutscene::Trigger} is 22:
+
+			#DIALOGUE
+			set {Mythical::%{_p}%::UUIDNPCTemp} to {Mythical::NPC::Nighty}
+			set {Mythical::%{_p}%::NPCTemp} to {Mythical::NPC::%{Mythical::%{_p}%::UUIDNPCTemp}%::FullName} 
+			set {Mythical::%{_p}%::Dialogue} to "<#DCEDF4>"
+			execute {_p} command "/diastory mysticgate clear"
+			loop 99 times:
+				cutscenePlayer({_p}, random integer between 32 and 34) #Oakshade Community Shots
+				wait 1 second
+				stop if {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%} is not true
+				stop loop if {Mythical::%{_p}%::Dialogue} is not set
+			cutscenePlayer({_p}, 35) #Oakshade Community Shots
+
+			add 1 to {Mythical::%{_p}%::Cutscene::Progress}
+
+		clear {Mythical::Cutscene::%{Mythical::%{_p}%::Cutscene::Type}%::%{Mythical::%{_p}%::Cutscene::Trigger}%}
