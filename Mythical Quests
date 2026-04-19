@@ -1,0 +1,1079 @@
+
+options:
+	story:&8 <##70797C>(<##CC3B3B>&l!<##70797C>) <##D0944D>M<##D39650>y<##D89A52>t<##DD9D54>h<##E2A156>i<##E8A458>c<##EDA85A>a<##F2AC5C>l <##F7AF5D>R<##FCB35F>e<##FFB766>a<##FFB96B>l<##FFBC70>m<##FFBE75>s <##70797C>(<##CC3B3B>&l!<##70797C>)
+	info:<##70797C>(<##CC3B3B>&l!<##70797C>)<##CB625F>
+	worlds: "Mythical_Realms" or "Mythical_Resources"
+
+function questMaster(p: player):
+	{Mythical::Toggle} is true
+	{_p}'s world is "Mythical_Realms"
+	{Mythical::%{_p}%::Cutscene::Player} is not set
+	{Mythical::%{_p}%::Dialogue} is not set
+	{Mythical::%{_p}%::Minigame} is not true
+	{Mythical::%{_p}%::Quest::Main::Reward} is true:
+		set {Mythical::%{_p}%::Quest::Main::Reward} to false
+		#send title "" with subtitle "&fYou Completed All Main Quests So Far!" to {_p} for 5 seconds
+		send "&7 " to {_p}
+		send "{@story}" to {_p}
+		send " {@info}<#7DF29C> +<#D0944D>QUEST COMPLETE &7<#7DF29C>You %{Mythical::%{_p}%::Quest::Main::Type}%<#7DF29C>ed %{Mythical::%{_p}%::Quest::Main::Title}%<#7DF29C>!" to {_p} if {Mythical::%{_p}%::Quest::Main::Type} is not "Talk to"
+		send " {@info}<#7DF29C> +<#D0944D>QUEST COMPLETE &7<#7DF29C>You Talked to %{Mythical::%{_p}%::Quest::Main::Title}%<#7DF29C>!" to {_p} if {Mythical::%{_p}%::Quest::Main::Type} is "Talk to"
+		send " {@info}<#7DF29C> Here's Your Rewards:" to {_p}
+		set {Mythical::%{_p}%::Navigator} to false
+		clear {Mythical::%{_p}%::Navigator::Location}
+		clear {Mythical::%{_p}%::Quest::Journal::%{Mythical::%{_p}%::Quest::Progress}%::*}
+		add "Quest %{Mythical::%{_p}%::Quest::Progress}% in %{Mythical::%{_p}%::Quest::Main::Name}%" to {Mythical::%{_p}%::Quest::Journal::%{Mythical::%{_p}%::Quest::Progress}%::*}
+		add "Objective: %{Mythical::%{_p}%::Quest::Main::Objective}%" to {Mythical::%{_p}%::Quest::Journal::%{Mythical::%{_p}%::Quest::Progress}%::*}
+		add "Goal: %{Mythical::%{_p}%::Quest::Main::Type}% %{Mythical::%{_p}%::Quest::Main::Title}%" to {Mythical::%{_p}%::Quest::Journal::%{Mythical::%{_p}%::Quest::Progress}%::*}
+		add "Goal Progress: %{Mythical::%{_p}%::Quest::Main::Progress}%/%{Mythical::%{_p}%::Quest::Main::Total}%" to {Mythical::%{_p}%::Quest::Journal::%{Mythical::%{_p}%::Quest::Progress}%::*}
+		add "Status: Completed" to {Mythical::%{_p}%::Quest::Journal::%{Mythical::%{_p}%::Quest::Progress}%::*}
+		add "" to {Mythical::%{_p}%::Quest::Journal::%{Mythical::%{_p}%::Quest::Progress}%::*}
+		add 1 to {Mythical::%{_p}%::Quest::Progress}
+		set {Mythical::%{_p}%::Quest::Main::Title} to "Not Started"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "None"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 0
+		set {_d} to random integer between 1 and {Mythical::%{_p}%::Level::Title}
+		add {_d} to {Mythical::%{_p}%::Money}
+		send " {@info}<#7DF29C> +<#3988A3>Money! &a+$%{_d}%" to {_p}
+		set {_m} to random integer between 1 and {Mythical::%{_p}%::Level::Title}
+		send " {@info}<#7DF29C> +<#3988A3>Mana! <#855EC9>+🧪%{_m}%" to {_p}
+		set {_x} to random integer between 1 and {Mythical::%{_p}%::Quest::Progress} + {Mythical::%{_p}%::Level::Title}
+		add {_x} to {Mythical::%{_p}%::Level::Progress}
+		send " {@info}<#7DF29C> Here's a Breakdown of Your Level!" to {_p}
+		send " {@info}<#7DF29C> +<#3988A3>Your Vitality Level is %{Mythical::%{_p}%::Level::Title} ? 0%" to {_p}
+		send " {@info}<#7DF29C> +<#3988A3>Experience Until Next Level! <#D0944D>%{Mythical::%{_p}%::Level::Progress} ? 0%/%({Mythical::%{_p}%::Level::Title} * ({Mythical::Level::Upgrade} + round({Mythical::%{_p}%::Level::Title} * 6.3)))%" to {_p}
+		play sound "entity.player.levelup" at volume 100 at pitch 10 to {_p}
+		play sound "entity.puffer_fish.death" at volume 100 at pitch 100 to {_p}
+		{Mythical::%{_p}%::Quest::Progress} is 5:
+			{_p}'s inventory does not contain {Mythical::Items::Wands::StarterWand}:
+				give {_p} 1 of {Mythical::Items::Wands::StarterWand}
+			set {Mythical::%{_p}%::Magic} to true
+			send " {@info}<#7DF29C> You Learned How to Use Magic! Here's a Starter Wand!" to {_p}
+		{Mythical::%{_p}%::Quest::Progress} is 7:
+			give {_p} random integer between 4 and 16 of bread named "&eBumbeloaf's Bites"
+			send " {@info}<#7DF29C> You got some &eBumbeloaf's Bites<#7DF29C>!" to {_p}
+	{Mythical::%{_p}%::Quest::Main::Type} is "Visit":
+		broadcast "%distance between {Mythical::%{_p}%::Navigator::Location}'s location and {_p}'s location% DISTANCE" if {Mythical::Debugger} is true
+		{Mythical::%{_p}%::Navigator} is true
+		{Mythical::%{_p}%::Navigator::Location} is set
+		distance between {Mythical::%{_p}%::Navigator::Location}'s location and {_p}'s location is less than 10
+		set {Mythical::%{_p}%::Quest::Main::Reward} to true
+	{Mythical::%{_p}%::Quest::Main::Type} is "Play":
+		{Mythical::%{_p}%::Quest::Main::Condition} is false
+		set {Mythical::%{_p}%::Quest::Main::Reward} to true
+	{Mythical::%{_p}%::Quest::Main::Type} is "Conquer":
+		{Mythical::%{_p}%::Quest::Main::Condition} is false
+		set {Mythical::%{_p}%::Quest::Main::Reward} to true
+	{Mythical::%{_p}%::Quest::Main::Type} is "Talk to":
+		{Mythical::%{_p}%::Quest::Main::Progress} >= {Mythical::%{_p}%::Quest::Main::Total}
+		set {Mythical::%{_p}%::Quest::Main::Reward} to true
+	{Mythical::%{_p}%::Quest::Main::Type} is "Kill":
+		uncolored {Mythical::%{_p}%::Quest::Main::Title} contains "Zombie":
+			set {Mythical::%{_p}%::Navigator::Location} to nearest zombie relative to {_p}
+		else if uncolored {Mythical::%{_p}%::Quest::Main::Title} contains "Skeleton":
+			set {Mythical::%{_p}%::Navigator::Location} to nearest skeleton relative to {_p}
+		else if uncolored {Mythical::%{_p}%::Quest::Main::Title} contains "Spider":
+			set {Mythical::%{_p}%::Navigator::Location} to nearest spider relative to {_p}
+		else if uncolored {Mythical::%{_p}%::Quest::Main::Title} contains "Creeper":
+			set {Mythical::%{_p}%::Navigator::Location} to nearest creeper relative to {_p}
+		{Mythical::%{_p}%::Quest::Main::Progress} >= {Mythical::%{_p}%::Quest::Main::Total}
+		set {Mythical::%{_p}%::Quest::Main::Reward} to true
+	{Mythical::%{_p}%::Quest::Main::Title} is "Not Started"
+	execute console command "/mradmin setnpcdata"
+
+	# PART I: A Soulful Enterance
+	#I1: Big A Party
+	#I1: Questionton
+	#I1: Form Chambers
+	#I2: Gupta & Jenkin
+	
+	# PART II: An Enchanting Oasis
+	{Mythical::%{_p}%::Quest::Progress} is 1:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-584, 64, 1242, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part II: An Enchanting Oasis"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Visit Mythical Realms Abode of Mysterious Things"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aMythical Realms Abode"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Visit"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	else if {Mythical::%{_p}%::Quest::Progress} is 2:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Flinket}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Flinket}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part II: An Enchanting Oasis"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Try to Obtain Top-Notch Equipment"
+		set {Mythical::%{_p}%::Quest::Main::Title} to {Mythical::NPC::%{Mythical::NPC::Flinket}%::FullName}'s name ? "&aFlinket Brogg"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	
+	# PART III: The Prism Promenade
+	else if {Mythical::%{_p}%::Quest::Progress} is 3:
+		#CUTSCENE 3 - Bonewart's Introduction
+		cutsceneMaster({_p}, "None", 3, "Story")
+		#Bonewart and Cackle Appear
+		#Bonewart Threatens He's Looking for Specific Types of People (Cultist Formtypes)
+		#Bonewart and Cackle Get in a Comical Argument
+		#Bonewart and Cackle Poof
+		#Flinket Freaks Out
+		#Big A's Voice Tells You to Come See Him, but Learn Magic First
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-599, 68, 1280, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part III: The Prism Promenade"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Learn About School of Magic"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aSchool of Magic"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Visit"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	else if {Mythical::%{_p}%::Quest::Progress} is 4:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Whick}'s location if uncolored {Mythical::%{_p}%::Form::Type} contains "Air"
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Esmund}'s location if uncolored {Mythical::%{_p}%::Form::Type} contains "Fire"
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Ajabadada}'s location if uncolored {Mythical::%{_p}%::Form::Type} contains "Water"
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Griv}'s location if uncolored {Mythical::%{_p}%::Form::Type} contains "Earth"
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Whick} if uncolored {Mythical::%{_p}%::Form::Type} contains "Air"
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Esmund} if uncolored {Mythical::%{_p}%::Form::Type} contains "Fire"
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Ajabadada} if uncolored {Mythical::%{_p}%::Form::Type} contains "Water"
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Griv} if uncolored {Mythical::%{_p}%::Form::Type} contains "Earth"
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part III: The Prism Promenade"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Learn New Ability: Magic"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "Professor %{Mythical::NPC::Whick}'s name ? "&aWhick Whiff"%" if uncolored {Mythical::%{_p}%::Form::Type} contains "Air"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "Professor %{Mythical::NPC::Esmund}'s name ? "&aEsmund"%" if uncolored {Mythical::%{_p}%::Form::Type} contains "Fire"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "Professor %{Mythical::NPC::Ajabadada}'s name ? "&aAjabadada"%" if uncolored {Mythical::%{_p}%::Form::Type} contains "Water"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "Professor %{Mythical::NPC::Griv}'s name ? "&aGriv"%" if uncolored {Mythical::%{_p}%::Form::Type} contains "Earth"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+
+	# PART IV: Big A's New A-bode
+	else if {Mythical::%{_p}%::Quest::Progress} is 5:
+		#CUTSCENE 4 - Magic School Professor's Introduction
+		cutsceneMaster({_p}, "None", 4, "Story")
+		#Each Professor Introduces Themselves
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-580, 64, 1303, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part IV: Big A's New A-bode"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Check Out Big A's New A-bode"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aBig A's New A-bode"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Visit"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	else if {Mythical::%{_p}%::Quest::Progress} is 6:
+		#CUTSCENE 5 - What's That Amazing, Delectable, Scrumptious Smell?
+		cutsceneMaster({_p}, "None", 5, "Story")
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Bumbleloaf}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Bumbleloaf}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part IV: Big A's New A-bode"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Get a Bumbleloaf Bite!"
+		set {Mythical::%{_p}%::Quest::Main::Title} to {Mythical::NPC::Bumbleloaf}'s name ? "&aSir Bumbleloaf"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		cutscenePlayer({_p}, 5)#Bumbleloaf's Bites Shot
+	else if {Mythical::%{_p}%::Quest::Progress} is 7:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-803, 84, 1393, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part IV: Big A's New A-bode"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Get Back to Business"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aBig A's New A-bode"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Visit"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#CUTSCENE 6 - Invasion Warning 1
+		cutsceneMaster({_p}, "None", 6, "Story")
+		#Oakshade Hall Guard Warns About Mob Invasions
+	else if {Mythical::%{_p}%::Quest::Progress} is 8:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::BigA}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::BigA}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part IV: Big A's New A-bode"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Chat With Big A"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aBig Azrael"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	
+	# PART V: A Grand Quest
+	else if {Mythical::%{_p}%::Quest::Progress} is 9:
+		#CUTSCENE 7 - Invasion Warning 2 & Bonewart's Second Warning
+		cutsceneMaster({_p}, "None", 7, "Story")
+		#Bonewart and Cackle Poof in and Give a Threatening Warning to Player & Big A-bode
+		#Bonewart and Cackle Poof
+		#Big A Informs the Player About the Mythical Information Station
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-530, 64, 1364, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part V: A Grand Quest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Learn About the Mythical Realms"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aMythical Information Station"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Visit"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	else if {Mythical::%{_p}%::Quest::Progress} is 10:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-530, 64, 1364, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Brella} and {Mythical::NPC::Oops} and {Mythical::NPC::Dandelion} and {Mythical::NPC::Cedric}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part V: A Grand Quest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Learn About the Mythical Realms"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aAny Receptionist"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	else if {Mythical::%{_p}%::Quest::Progress} is 11:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-475, 79, 1300, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part V: A Grand Quest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Visit Central Castle in Oak Commons"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aGrand Room"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Visit"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		cutscenePlayer({_p}, 7) #Central Castle Shot
+	else if {Mythical::%{_p}%::Quest::Progress} is 12:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Morrin}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Morrin}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part V: A Grand Quest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Find the Stock Shop"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aMorrin Wetheath"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#Morrin Says the Stock Shop is Not Operational Anymore
+		#Morrin Also Says Merchants Around Town Have Items to Get
+		#Morrin Then Informs You of the Circus Across the Way, and to Start There
+	else if {Mythical::%{_p}%::Quest::Progress} is 13:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-421, 64, 1376, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditionals::*}
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part V: A Grand Quest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Visit Circus in Oak Commons"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aCircus Big Top"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Visit"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		cutscenePlayer({_p}, 8) #Circus Big Top Shot
+	else if {Mythical::%{_p}%::Quest::Progress} is 14:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Leaflind}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Leaflind}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part V: A Grand Quest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Learn About The Circus"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aLeaflind Moature"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#Leaflind Warns You About Serious Invasions in Most Areas Around
+		#Big A's Voice Appears and Tells You to Start in the Mythical Forest Area
+	else if {Mythical::%{_p}%::Quest::Progress} is 15:
+		#CUTSCENE 8 - Circusgame Tutorial
+		cutsceneMaster({_p}, "None", 8, "Story")
+		#Leaflind teaches how to play circusgames
+		set {Mythical::%{_p}%::Navigator} to false
+		clear {Mythical::%{_p}%::Navigator::Location}
+		set {Mythical::%{_p}%::Quest::Main::Condition} to "Circusgame"
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part V: A Grand Quest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Participate in Any Circus Game"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aAny Minigame"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Play"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+
+	# PART VI: The Mythical Forest
+	else if {Mythical::%{_p}%::Quest::Progress} is 16:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-610, 63, 1217, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part VI: The Mythical Forest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Visit The Mythical Forest Area"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aMythical Forest"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Visit"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		cutscenePlayer({_p}, 9) #Mythical Forest Shot
+	else if {Mythical::%{_p}%::Quest::Progress} is 17:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part VI: The Mythical Forest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Eliminate a Mythical Forest Threat"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aZombies" or "&aSkeletons" or "&aSpiders"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Kill"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to random integer between 2 and 3
+	else if {Mythical::%{_p}%::Quest::Progress} is 18:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Maryton}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Maryton}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part VI: The Mythical Forest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Chat With Maryton"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aMaryton Grange"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#Maryton Explains to the Player about Player Housing and Purchasing a Plot
+	else if {Mythical::%{_p}%::Quest::Progress} is 19:
+		#CUTSCENE 9 - Mooncreston Info
+		cutsceneMaster({_p}, "None", 9, "Story")
+		#A quick look around Mooncreston
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::BigA}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::BigA}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part VI: The Mythical Forest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Return to Big A"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aBig Azrael"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#CUTSCENE 10 - Bonewart's True Intentions
+		cutsceneMaster({_p}, "None", 10, "Story")
+		#While you were away, Big A learned about Bonewart's true intentions to seek out the Cultist forms
+		#Big A informs you about visiting several shops around town that provide various goods
+		#Big A informs you about the various powers and leveling up, becoming more powerful over time
+
+	# PART VII: A Visit Around Town
+	else if {Mythical::%{_p}%::Quest::Progress} is 20:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Hocker}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Hocker}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part VII: A Visit Around Town"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Visit Tales & Ales Pub"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aHocker Focker"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#Hocker informs you about potions, and their usefulness in the realms.
+	else if {Mythical::%{_p}%::Quest::Progress} is 21:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Oddle}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Oddle}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part VII: A Visit Around Town"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Visit Oddle's Emporium"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aOddle Marketson"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#Oddle informs you about her oddware, including many items from the Nether and the End.
+	else if {Mythical::%{_p}%::Quest::Progress} is 22:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Gorebeard}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Gorebeard}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part VII: A Visit Around Town"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Visit Gorebeard's Armory"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aGorebeard Gunner"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#Gorebeard informs you about special powers infused in each armor set.
+	else if {Mythical::%{_p}%::Quest::Progress} is 23:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-382.5, 64, 1275.5, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part VII: A Visit Around Town"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Visit Galliant Gazebo"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aGazebo for Clarity"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Visit"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	else if {Mythical::%{_p}%::Quest::Progress} is 24:
+		#CUTSCENE 11 - The Galliant Gazebo
+		cutsceneMaster({_p}, "None", 11, "Story")
+		#Calm shots of the Gazebo and some advice from your concious
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Thornpot}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Thornpot}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part VII: A Visit Around Town"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Visit Three-Knees' Stall"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aThree-Knees Thornpot"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#Gorebeard informs you about special powers infused in each armor set.
+	else if {Mythical::%{_p}%::Quest::Progress} is 25:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::BigA}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::BigA}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part VII: A Visit Around Town"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Return to Big A"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aBig Azrael"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#CUTSCENE 12 - The Water's Edge Forest
+		cutsceneMaster({_p}, "None", 12, "Story")
+		#Big A informs you of the Water's Edge Forest and the Massive Mythical Portal that takes you to another realm.
+		#This other realm, called the Mythical Resources, is used by locals to prevent ruining the world everyone lives in.
+		#Mythical Resources gets reset frequently so its not recommended to build there and store things there.
+		#There is also another realm that opens up for events and holidays called the Mythical Challenges.
+
+	# PART VIII: The Mythical Realms
+	else if {Mythical::%{_p}%::Quest::Progress} is 26:
+		cutscenePlayer({_p}, 21) #Water's Edge Shot
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Jaul}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Jaul}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part VIII: The Mythical Realms"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Visit Water's Edge Forest"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aJaul Piguire"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#Jaul informs you that the Mythical Resources portal is up ahead, but be careful, man.
+	else if {Mythical::%{_p}%::Quest::Progress} is 27:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Porridge}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Porridge}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part VIII: The Mythical Realms"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Visit Massive Portal"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aPorridge Widle"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#Porridge informs you that the portal leads you to the other realm, but be very careful.
+		#The portal is closed until Vitality Level 10.
+		#Type /mr to return back at any time. You'll be brought to the Central Castle area. (maybe back to the portal)
+	else if {Mythical::%{_p}%::Quest::Progress} is 28:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part VIII: The Mythical Realms"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Eliminate a Water's Edge Forest Threat"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aZombies" or "&aSkeletons" or "&aSpiders"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Kill"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to random integer between 3 and 5
+	else if {Mythical::%{_p}%::Quest::Progress} is 29:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Jaul}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Jaul}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part VIII: The Mythical Realms"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Report Back to Jaul"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aJaul Piguire"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#Jaul thanks you for your contributions, and informs you of Tookie, his 'love interest'
+		#Jaul is just a sucker for the cowgirl type
+
+	# PART IX: Bring it Around Town
+	else if {Mythical::%{_p}%::Quest::Progress} is 30:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Tookie}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Tookie}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part IX: Bring it Around Town"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Jaul is Crazy... Right?"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aTookie Pookie"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#Tookie informs you that she's the lead farmhand for Oak Commons.
+		#She then tells you about the Farming Minigame and tells you to try it out.
+	else if {Mythical::%{_p}%::Quest::Progress} is 31:
+		#CUTSCENE 13 - Farmers Tutorial
+		cutsceneMaster({_p}, "None", 13, "Story")
+		set {Mythical::%{_p}%::Navigator} to false
+		clear {Mythical::%{_p}%::Navigator::Location}
+		set {Mythical::%{_p}%::Quest::Main::Condition} to "Farmer"
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part IX: Bring it Around Town"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Participate in Farming Activity"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aFarming Minigame"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Play"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	else if {Mythical::%{_p}%::Quest::Progress} is 32:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Finn}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Finn}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part IX: Bring it Around Town"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Learn About Fishing"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aFinn Finnegan Fletcher"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#Finn infroms and teaches you about fishing and the benefits of it.
+		#He then hands you a rod and tells you to step up to a dock and get casting!
+	else if {Mythical::%{_p}%::Quest::Progress} is 33:
+		#CUTSCENE 14 - Fishers Tutorial
+		cutsceneMaster({_p}, "None", 14, "Story")
+		set {Mythical::%{_p}%::Navigator} to false
+		clear {Mythical::%{_p}%::Navigator::Location}
+		set {Mythical::%{_p}%::Quest::Main::Condition} to "Fisher"
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part IX: Bring it Around Town"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Participate in Fishing Activity"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aFishing Minigame"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Play"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	#Big A's Voice Tells You to Investigate the Blocked Off Area's by Wandering Waffle Diner
+	else if {Mythical::%{_p}%::Quest::Progress} is 34:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-379.5, 64, 1357.5, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part VII: A Visit Around Town"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Investigate Blocked Off Areas"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aThe Wandering Waffle Diner"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Visit"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		cutscenePlayer({_p}, 23) #Wandering Waffle Shot
+	else if {Mythical::%{_p}%::Quest::Progress} is 35:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Creggan}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Creggan}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part IX: Bring it Around Town"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Learn Intentions of the Area"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aCreggan Morganson"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#CUTSCENE 15 - Blocked Off Area
+		cutsceneMaster({_p}, "None", 15, "Story")
+		#Creggan says that Oak Commons Folk blocked off the areas due to being seriously dangerous.
+		#They will only open up once people become powerful enough to conquer it.
+		#He believes that Bonewart wants to get to the ancient Cultist ruins down the path to seek ancient powers.
+		#Creggan tells you that the Rocky Forest area is a huge threat nearby and needs to be dealt with, and to visit that next to help out.
+	
+	# PART X: The Rocky Forest
+	else if {Mythical::%{_p}%::Quest::Progress} is 36:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-559.5, 64, 1386.5, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part X: The Rocky Forest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Visit Rocky Forest Area"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aThe Rocky Forest"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Visit"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		cutscenePlayer({_p}, 25) #Rocky Forest Shot
+	else if {Mythical::%{_p}%::Quest::Progress} is 37:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part X: The Rocky Forest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Eliminate a Rocky Forest Threat"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aZombies" or "&aSkeletons" or "&aSpiders"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Kill"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to random integer between 4 and 8
+	else if {Mythical::%{_p}%::Quest::Progress} is 38:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-604.5, 102, 1560.5, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part X: The Rocky Forest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Visit Oakshade Gardens Gate"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aGate"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Visit"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	else if {Mythical::%{_p}%::Quest::Progress} is 39:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part X: The Rocky Forest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Eliminate an Oakshade Gardens Threat"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aCreepers"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Kill"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to random integer between 2 and 3
+	
+	# PART XI: The Oakshade Community
+	else if {Mythical::%{_p}%::Quest::Progress} is 40:
+		#CUTSCENE 16 - The Oakshade Community Tragedy
+		cutsceneMaster({_p}, "None", 16, "Story")
+		#Big A's voice informs you of the devistation of the Oakshade Community, which suffered serious invasions that made everyone move out.
+		#All residents now live at the Oak Commons Hotel 'Mick's Inn' but they would like to move back.
+		#Talk to Patsy, Oakshade Community guard, for more information.
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Patsy}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Patsy}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part XI: The Oakshade Community"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Get More Information"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aPatsy LaFrind"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	else if {Mythical::%{_p}%::Quest::Progress} is 41:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-751.5, 71, 1487.5, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part XI: The Oakshade Community"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Visit Oakshade Community"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aOther Side"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Visit"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	else if {Mythical::%{_p}%::Quest::Progress} is 42:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Corock}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Corock}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part XI: The Oakshade Community"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Get More Information"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aCorock J'ock"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#Corock teaches you about the Mining minigame.
+	else if {Mythical::%{_p}%::Quest::Progress} is 43:
+		#CUTSCENE 17 - Miners Tutorial
+		cutsceneMaster({_p}, "None", 17, "Story")
+		set {Mythical::%{_p}%::Navigator} to false
+		clear {Mythical::%{_p}%::Navigator::Location}
+		set {Mythical::%{_p}%::Quest::Main::Condition} to "Miner"
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part XI: The Oakshade Community"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Participate in Mining Activity"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aMining Minigame"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Play"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	else if {Mythical::%{_p}%::Quest::Progress} is 44:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::BigA}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::BigA}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part XI: The Oakshade Community"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Return to Big A"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aBig Azrael"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#Big A informs you of dungeons and invasions around town that takeover certain areas.
+		#There's 1 area, however, that seems to have endless invasions in the Oakshade Community.
+		#Visit and conquer the Oakshade Community Dungeon to see what's going on, then report back to Big A.
+	else if {Mythical::%{_p}%::Quest::Progress} is 45:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-744.5, 71, 1500.5, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to "Dungeon"
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part XI: The Oakshade Community"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Conquer Oakshade Community Dungeon"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "<#CB625F>Oakshade Community Dungeon"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Conquer"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#Once completed, you learn that Oakshade Community Dungeon really does not restore, and is in fact always invaded.
+	else if {Mythical::%{_p}%::Quest::Progress} is 46:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Sharon}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Sharon}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part XI: The Oakshade Community"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Learn More Information"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aSharon Knowles"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+		#CUTSCENE 19 - The Enchanting Forest
+		cutsceneMaster({_p}, "None", 19, "Story")
+		#Sharon informs you about a mysterious shack in the Enchanting Forest across town that seems to endlessly produce mobs
+		#Maybe its the same energy forces at work?
+		#Talk to Ingad to see where the shack even is
+	
+	# PART XII: The Enchanting Forest
+	else if {Mythical::%{_p}%::Quest::Progress} is 47:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Ingad}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Ingad}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part XII: The Enchanting Forest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Find Location of Mysterious Shack"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aIngad Petrish"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	else if {Mythical::%{_p}%::Quest::Progress} is 48:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-481.5, 63, 1117.5, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part XII: The Enchanting Forest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Visit Mysterious Shack"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aMysterious Shack"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Visit"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	else if {Mythical::%{_p}%::Quest::Progress} is 49:
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part XII: The Enchanting Forest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Eliminate an Enchanting Forest Threat"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aSkeletons"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Kill"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to random integer between 4 and 5
+	else if {Mythical::%{_p}%::Quest::Progress} is 50:
+		cutscenePlayer({_p}, 31) #Fireplace Shot
+		#CUTSCENE 20 - The Fireplace
+		cutsceneMaster({_p}, "None", 20, "Story")
+		#Something tells you to look in the fireplace of the mysterious shack to find a secret...
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-489.5, 53, 1113.5, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part XII: The Enchanting Forest"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Investigate Secrets in Fireplace"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aMysterious Shack Fireplace"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Visit"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	
+	#PART XIII: The Mystic Gate
+	else if {Mythical::%{_p}%::Quest::Progress} is 51:
+		#CUTSCENE 21 - Hiphone's Story
+		cutsceneMaster({_p}, "None", 21, "Story")
+		#Hiphonie informs you that Bonewart is recruiting monsters to help him invade the old cultist ruins
+		#She then tells you of the Power of the Forms and that there are many, many more Formtypes that are hidden away
+		#She then tells you of the Ancient Form Order, which was hidden away and replaced with the current Form Order which strips them down to only 4
+		#She then tells you of the Forbidden Forms, formtypes that are so powerful they had to be locked away instead of hidden so that nobody could access the powers
+		#There is 1 place that is powerful enough to access any powers, and that is the Ancient Mystic Gate
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to location(-433.5, 64, 882.5, world("Mythical_Realms"))
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part XIII: The Mystic Gate"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Investigate Mystic Gate"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aMystic Gate"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Visit"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	else if {Mythical::%{_p}%::Quest::Progress} is 52:
+		#CUTSCENE 22 - The Mystic Gate Ruins
+		cutsceneMaster({_p}, "None", 22, "Story")
+		set {Mythical::%{_p}%::Navigator} to true
+		set {Mythical::%{_p}%::Navigator::Location} to {Mythical::NPC::Nighty}'s location
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		set {Mythical::%{_p}%::Quest::Main::Conditions::*} to {Mythical::NPC::Nighty}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part XIII: The Mystic Gate"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "Learn More"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aNighty Niteil"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Talk to"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+	else if {Mythical::%{_p}%::Quest::Progress} is 53:
+		set {Mythical::%{_p}%::Navigator} to false
+		clear {Mythical::%{_p}%::Navigator::Location}
+		set {Mythical::%{_p}%::Quest::Main::Condition} to false
+		clear {Mythical::%{_p}%::Quest::Main::Conditions::*}
+		set {Mythical::%{_p}%::Quest::Main::Name} to "Part XIII: The Mystic Gate"
+		set {Mythical::%{_p}%::Quest::Main::Objective} to "That's It, For Now"
+		set {Mythical::%{_p}%::Quest::Main::Title} to "&aLeft To Do"
+		set {Mythical::%{_p}%::Quest::Main::Type} to "Nothing"
+		set {Mythical::%{_p}%::Quest::Main::Progress} to 0
+		set {Mythical::%{_p}%::Quest::Main::Total} to 1
+
+
+	{Mythical::%{_p}%::Quest::Main::Title} is not "Not Started"
+	assignLevel({_p})
+	send title "&6%{Mythical::%{_p}%::Quest::Main::Name}%" with subtitle "&6Goal: &f%{Mythical::%{_p}%::Quest::Main::Objective}%" to {_p} for 10 seconds
+	play sound "ambient.cave" at volume 50 at pitch 1 to {_p}
+	play sound "block.portal.trigger" at volume 50 at pitch 1 to {_p}
+	send "&7 " to {_p}
+	send "{@story}" to {_p}
+	send " {@info}<#00C889> +<#E2A156>NEW QUEST &f%{Mythical::%{_p}%::Quest::Main::Objective}%" to {_p}
+	{Mythical::%{_p}%::Quest::Main::Type} is not "Talk to":
+		send " {@info}<#8B969B> Your New Quest Goal is %{Mythical::%{_p}%::Quest::Main::Type}% %{Mythical::%{_p}%::Quest::Main::Progress}% %{Mythical::%{_p}%::Quest::Main::Title}%" to {_p} if {Mythical::%{_p}%::Quest::Main::Progress} > 1
+		send " {@info}<#8B969B> Your New Quest Goal is %{Mythical::%{_p}%::Quest::Main::Type}% %{Mythical::%{_p}%::Quest::Main::Title}%" to {_p} if {Mythical::%{_p}%::Quest::Main::Progress} < 2
+	send " {@info}<#8B969B> Your New Quest Goal is Talk to %{Mythical::%{_p}%::Quest::Main::Title}%" to {_p} if {Mythical::%{_p}%::Quest::Main::Type} is "Talk to"
+
+
+every 1 second:
+	stop if amount of all players is less than 1
+	{Mythical::Toggle} is true
+	loop all players:
+		loop-player's world is "Mythical_Realms"
+		distance between location(-743, 71, 1499, world("Mythical_Realms")) and location of block under loop-player is less than 6:
+			{Mythical::%loop-player%::Dungeon::Active} is not set
+			chance of 10%:
+				send title "&cNear a Dungeon" with subtitle "Type /dungeon to Join" to loop-player for 10 seconds
+				#send " {@info} You're Near a Dungeon! Click the Cobweb in the GUI to Join!" to loop-player
+				#send " {@info} Type /minigame dungeon to Join a Dungeon if You're Close!" to loop-player
+		#	wait 1 second
+		#	execute loop-player command "/minigame dungeon"
+		{Mythical::%loop-player%::Dungeon::Active} is set
+		send action bar "<#CB625F>%{Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Status} ? "Recruiting"% Players for %{Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Title} ? "Dungeon"% &8| <#CB625F>Time Until Start: &7%round({Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Timer} ? 0)%s &8| <#CB625F>Difficulty: &7%{Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Difficulty} ? 1% &8| <#CB625F>Players: &7%amount of {Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Players::*} ? 1%" to loop-player if {Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Status} is "Recruiting"
+		send action bar "<#CB625F>%{Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Status} ? "Boarding"% %{Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Title} ? "Dungeon"%" to loop-player if {Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Status} is "Boarding"
+		send action bar "<#CB625F>%{Mythical::Dungeon::Type::%{Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Type}%} ? "Crawling"% through %{Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Title} ? "Dungeon"% &8| <#CB625F>Time Since Start: &7%round({Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Timer} ? 0)%s &8| <#CB625F>Difficulty: &7%{Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Difficulty} ? 1%" to loop-player if {Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Status} is "Crawling"
+		send action bar "<#CB625F>%{Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Title} ? "Dungeon"% Conquered by %{Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Players::*} ? loop-player's display name ? loop-player% &8| <#CB625F>Time Taken: &7%round({Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Timer} ? 0)%s &8| <#CB625F>Difficulty: &7%{Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Difficulty} ? 1%" to loop-player if {Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Status} is "Rewarding" or "Completed"
+		dungeonMaster(loop-player)
+		{Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Status} is "Crawling":
+			{Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Boss} is not set
+			distance between {Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::LocEnd} and location of block under loop-player is less than 6
+			set {Mythical::Dungeon::%{Mythical::%loop-player%::Dungeon::Active}%::Status} to "Rewarding"
+
+on death:
+	{Mythical::Dungeon::%{Mythical::%attacker%::Dungeon::Active}%::Boss} is set:
+		{Mythical::Dungeon::%{Mythical::%attacker%::Dungeon::Active}%::Boss} contains uncolored victim's name
+		set {Mythical::Dungeon::%{Mythical::%attacker%::Dungeon::Active}%::Status} to "Rewarding"
+
+
+on respawn:
+	{Mythical::Dungeon::%{Mythical::%player%::Dungeon::Active}%::Status} is "Crawling"
+	loop 10 times:
+		heal player
+		wait 10 ticks
+
+function dungeonMaster(p: player):
+	{Mythical::Toggle} is true
+	{_p}'s world is "Mythical_Realms"
+	{Mythical::%{_p}%::Cutscene::Player} is not set
+	{Mythical::%{_p}%::Dialogue} is not set
+	{Mythical::%{_p}%::Minigame} is not true
+
+#{Mythical::%player%::Dungeon::*}
+#{Mythical::%player%::Dungeon::Active}
+#{Mythical::%player%::Dungeon::%{Mythical::%player%::Dungeon::Active}%::Complete}
+#{Mythical::%player%::Dungeon::%{Mythical::%player%::Dungeon::Active}%::Deaths::Given}
+#{Mythical::%player%::Dungeon::%{Mythical::%player%::Dungeon::Active}%::Deaths::Taken}
+
+#clear {Mythical::Dungeon::1::*}
+#set {Mythical::Dungeon::1::Title} to "Oakshade Community Dungeon"
+#set {Mythical::Dungeon::1::LocWait} to location(-433.5, 64, 882.5, world("Mythical_Realms"))
+#set {Mythical::Dungeon::1::LocStart} to location(-433.5, 64, 882.5, world("Mythical_Realms"))
+#set {Mythical::Dungeon::1::LocMobs::*} to location(-433.5, 64, 882.5, world("Mythical_Realms"))
+#set {Mythical::Dungeon::1::LocEnd} to location(-433.5, 64, 882.5, world("Mythical_Realms"))
+#set {Mythical::Dungeon::1::Required} to 1
+#set {Mythical::Dungeon::1::Timer} to 120
+#{Mythical::Dungeon::1::Players::*}
+#{Mythical::Dungeon::1::Rewards::*}
+
+#set {Mythical::Dungeon::1::Status} to "Recruiting"
+#STATUS:
+#Recruiting:Waiting for Players
+#Boarding:Waiting to Enter
+#Crawling:Dungeon Active
+#Rewarding:Ending
+#Completed:Restoring or Waiting to Reset
+
+#set {Mythical::Dungeon::1::Type} to "Boss"
+#TYPES
+#Run:Run to the end to complete the dungeon!
+#Regular:Defeat x mobs or complete puzzle to progress to next room and/or complete the dungeon.
+#Timer:Complete the dungeon before the timer ends.
+#Hoard:Defeat x mobs in x waves to complete the dungeon.
+#Boss:Defeat the boss to complete the dungeon.
+#set {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Type::Run} to "Run to the End!"
+#set {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Type::Regular} to "Complete Each Room!"
+#set {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Type::Timer} to "Find the End Before Time's Up!"
+#set {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Type::Hoard} to "Defeat All Enemies!"
+#set {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Type::Boss} to "Find & Kill %{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Boss} ? "The Boss"%!"
+
+#set {Mythical::Dungeon::1::Difficulty} to 1
+#DIFFICULTIES
+#1:Easiest(1.0-1.9)
+#2:Easy(2.0-2.9)
+#3:Regular(3.0-3.9)
+#4:Moderate(4.0-4.9)
+#5:Difficult(5.0-5.9)
+#6:Challenge(6.0-6.9)
+
+
+	#set {Mythical::%{_p}%::Dungeon::Active} to nearest {Mythical::Dungeon::%loop-value%::LocWait} relative to {_p}
+	{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Players::*} does not contain {_p}:
+		add {_p} to {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Players::*} if {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Players::*} does not contain {_p}
+		{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Timer} is not set:
+			set {Mythical::Dungeon::Type::Run} to "Run to the End"
+			set {Mythical::Dungeon::Type::Regular} to "Complete Each Room"
+			set {Mythical::Dungeon::Type::Timer} to "Find the End Before Time's Up"
+			set {Mythical::Dungeon::Type::Hoard} to "Defeat All Enemies"
+			set {Mythical::Dungeon::Type::Boss} to "Find & Kill %{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Boss} ? "The Boss"%"
+			{Mythical::%{_p}%::Dungeon::Active} is 1:
+				set {Mythical::Dungeon::1::Title} to "Oakshade Community Dungeon"
+				set {Mythical::Dungeon::1::Required} to 1
+				set {Mythical::Dungeon::1::Difficulty} to 1
+				set {Mythical::Dungeon::1::Type} to "Boss"
+				set {Mythical::Dungeon::1::Boss} to "King Rotter"
+				clear {Mythical::Dungeon::1::Rewards::*}
+			else if {Mythical::%{_p}%::Dungeon::Active} is 2:
+				set {Mythical::Dungeon::2::Title} to "Oakshade Caverns"
+				set {Mythical::Dungeon::2::Required} to 1
+				set {Mythical::Dungeon::2::Difficulty} to 1
+				set {Mythical::Dungeon::2::Type} to "Hoard"
+				clear {Mythical::Dungeon::2::Boss}
+				clear {Mythical::Dungeon::2::Rewards::*}
+			{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::LocWait} is set
+			{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::LocStart} is set
+			set {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Status} to "Recruiting"
+			broadcast " {@info} %{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Title}% is Now Recruiting for Players!"
+			broadcast " {@info} Go Near the Dungeon to Enter"
+			set {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Timer} to 120
+			send "" to {_p}
+			send " {@info} You've Been Recruited to %{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Title} ? "a Dungeon"%" to {_p}
+			send " {@info} Waiting for More Players to Enter..." to {_p}
+		else if {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Status} is "Recruiting":
+			send "" to {_p}
+			send " {@info} You've Been Recruited to %{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Title} ? "a Dungeon"%" to {_p}
+			send " {@info} Waiting for More Players to Enter..." to {_p}
+			loop {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Players::*}:
+				send " {@info} %{_p}'s display name ? {_p}%<#CB625F> Joined the Recruitment For %{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Title} ? "the Dungeon"%" to loop-value
+				{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Difficulty} is less than 7:
+					add 0.5 to {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Difficulty} if {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Difficulty} is less than 7
+					send " {@info} Difficulty Increase! Difficulty: &7%{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Difficulty}%" to {_p}
+			set {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Timer} to 10 if amount of {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Players::*} is more than ({Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Difficulty} * 2)
+	{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Status} is "Recruiting":
+		remove (1 / amount of {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Players::*}) from {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Timer}
+		{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Timer} is less than 0
+		{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::LocStart} is set
+		set {Mythical::Dungeon::1::Status} to "Boarding"
+		clear {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Timer}
+		amount of {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Players::*} is more than ({Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Required} - 1):
+			set {Mythical::Dungeon::1::Status} to "Crawling"
+			broadcast " {@info} %{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Title}% is Starting..."
+		loop {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Players::*}:
+			teleport loop-value to {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::LocStart}
+			send " {@info} %{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Title} ? "The Dungeon"% Has Begun!" to {_p}
+			send title "Go! Go! Go!" with subtitle {Mythical::Dungeon::Type::%{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Type}%} ? "Find the Exit!" to {_p} for 10 seconds
+	else if {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Status} is "Crawling":
+		chance of 0.001%:
+			kill all zombies and skeletons and spiders and creepers and silverfish in radius 100 of {_p}
+		add (1 / amount of {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Players::*}) to {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Timer}
+		
+		#WOOLS
+		#LIME-Zombie
+		#GREEN-Creeper
+		#RED-Spider
+		#WHITE-Skeleton
+		#LIGHT GRAY-Silverfish
+		loop all blocks in radius 8 of {_p}:
+			stop loop if amount of entities in radius 8 of {_p} is more than ({Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Difficulty} * 7)
+			loop-block is lime wool:
+				chance of ({Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Difficulty} * 0.5)
+				spawn zombie 1.5 meters above loop-block
+				#Zombie Rotter
+				set the generic scale attribute of last spawned zombie to random number between 0.5 and 1
+				set the generic knockback resistance attribute of last spawned zombie to 10
+				set the generic attack damage attribute of last spawned zombie to 1
+				set the generic movement speed attribute of last spawned zombie to 0.15
+				set last spawned zombie's max health to random integer between 1 and 3
+				set last spawned zombie's health to 3
+				set {Mythical::%last spawned zombie%::Name} to "&0Rotter"
+				set last spawned zombie's tool to cornflower or wooden sword of sharpness 2 or iron sword
+				equip last spawned zombie with leather chestplate and leather leggings and leather boots
+				chance of 15%:
+					equip last spawned zombie with iron chestplate and iron leggings and iron boots
+				chance of 5%:
+					equip last spawned zombie with netherite chestplate and netherite leggings and netherite boots
+				apply jump boost without particles to last spawned zombie for 9999 days
+			loop-block is green wool:
+				chance of ({Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Difficulty} * 0.1)
+				spawn creeper 1.5 meters above loop-block
+			loop-block is red wool:
+				chance of ({Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Difficulty} * 0.3)
+				spawn spider 1.5 meters above loop-block
+				#Web Widow
+				set the generic scale attribute of last spawned spider to random number between 0.8 and 1.2
+				set the generic attack damage attribute of last spawned spider to 1.5
+				set the generic movement speed attribute of last spawned spider to random number between 0.2 and 0.6
+				set last spawned spider's max health to random integer between 3 and 6
+				set last spawned spider's health to 6
+				set {Mythical::%last spawned spider%::Name} to "&0Web Widow"
+			loop-block is white wool:
+				chance of ({Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Difficulty} * 0.2)
+				spawn skeleton 1.5 meters above loop-block
+				#Dusk Archer
+				set the generic scale attribute of last spawned skeleton to random number between 0.8 and 1.2
+				set the generic attack damage attribute of last spawned skeleton to 1
+				set the generic movement speed attribute of last spawned skeleton to 0.3
+				set last spawned skeleton's max health to random integer between 2 and 4
+				set last spawned skeleton's health to 4
+				set {Mythical::%last spawned skeleton%::Name} to "&0Dusk Archer"
+				set last spawned skeleton's tool to bow or wooden sword of sharpness 2
+				chance of 25%:
+					equip last spawned skeleton with leather chestplate and leather leggings and leather boots
+				chance of 15%:
+					equip last spawned skeleton with iron chestplate and iron leggings and iron boots
+				chance of 5%:
+					equip last spawned skeleton with netherite chestplate and netherite leggings and netherite boots
+			loop-block is light gray wool:
+				chance of ({Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Difficulty} * 0.2)
+				spawn silverfish 1.5 meters above loop-block
+				#Sewer Rat
+				set the generic scale attribute of last spawned silverfish to random number between 0.8 and 1.8
+				set the generic attack damage attribute of last spawned silverfish to 4
+				set the generic movement speed attribute of last spawned silverfish to random number between 0.1 and 0.2
+				set last spawned silverfish's max health to random integer between 3 and 6
+				set last spawned silverfish's health to 6
+				set {Mythical::%last spawned silverfish%::Name} to "&7Sewer Rat"
+			
+			#CONCRETES
+			#LIME-ZOMBIE
+			loop-block is lime concrete:
+				loop all entities in radius 10 of loop-block:
+					stop if loop-entity is zombie
+				spawn zombie 1.5 meters above loop-block
+				#Zombie King Rotter
+				set the generic scale attribute of last spawned zombie to random number between 1.5 and 2
+				set the generic knockback resistance attribute of last spawned zombie to 10
+				set the generic attack damage attribute of last spawned zombie to 2
+				set the generic movement speed attribute of last spawned zombie to 0.25
+				set last spawned zombie's max health to 40
+				set last spawned zombie's health to 40
+				set {Mythical::%last spawned zombie%::Name} to "&6King Rotter"
+				set last spawned zombie's name to "&6King Rotter"
+				set last spawned zombie's tool to diamond sword of sharpness 5
+				equip last spawned zombie with netherite chestplate and netherite leggings and netherite boots
+				apply jump boost without particles to last spawned zombie for 9999 days
+		{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Timer} is more than 1800:
+			set {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Status} to "Rewarding"
+			broadcast " {@info} Times Up For %{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Title}%..."
+	else if {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Status} is "Rewarding":
+		kill all zombies and skeletons and spiders and creepers and silverfish in radius 100 of {_p}
+		broadcast " {@info} %{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Title}% Was Conquered by %{Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Players::*}%!"
+		set {Mythical::%{_p}%::Temp} to {Mythical::%{_p}%::Dungeon::Active}
+		set {Mythical::Dungeon::%{Mythical::%{_p}%::Temp}%::Status} to "Completed"
+		wait 10 seconds
+		loop {Mythical::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Players::*}:
+			set {Mythical::%loop-value%::Quest::Main::Condition} to false if {Mythical::%loop-value%::Quest::Main::Condition} is "Dungeon"
+			set {Mythical::%loop-value%::Dungeon::%{Mythical::%{_p}%::Dungeon::Active}%::Complete} to "Completed"
+			teleport loop-value to {Mythical::Dungeon::%{Mythical::%{_p}%::Temp}%::LocWait}
+			remove loop-value from {Mythical::Dungeon::%{Mythical::%{_p}%::Temp}%::Players::*}
+			clear {Mythical::%loop-value%::Dungeon::*}
+		clear {Mythical::Dungeon::%{Mythical::%{_p}%::Temp}%::Players::*}
+		set {Mythical::Dungeon::%{Mythical::%{_p}%::Temp}%::Status} to "Recruiting"
+		clear {Mythical::Dungeon::%{Mythical::%{_p}%::Temp}%::Timer}
+		clear {Mythical::%{_p}%::Temp}
